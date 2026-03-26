@@ -22,7 +22,7 @@ const cartSchema = new mongoose.Schema({
   timestamps: true
 });
 
-cartSchema.index({ user: 1 });
+// Index for better query performance (Already created by unique: true)
 
 cartSchema.pre('save', function(next) {
   this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);
