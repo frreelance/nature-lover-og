@@ -48,11 +48,14 @@ const PlantsPage = () => {
     let result = [...plants];
 
     if (filters.environment !== 'all') {
-      result = result.filter(p => p.category?.toLowerCase() === filters.environment.toLowerCase());
+      result = result.filter(p => p.category?.toLowerCase().includes(filters.environment.toLowerCase()));
     }
 
     if (filters.size !== 'all') {
-      result = result.filter(p => p.size?.toLowerCase() === filters.size.toLowerCase());
+      result = result.filter(p => {
+        if (!p.size) return false;
+        return p.size.toLowerCase() === filters.size.toLowerCase();
+      });
     }
 
     result = result.filter(p => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]);

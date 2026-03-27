@@ -108,7 +108,7 @@ const OrderDetailsPage = () => {
                             >
                                 <ArrowLeft size={14} strokeWidth={3} /> Return to Orders
                             </button>
-                            <h1 className="text-4xl font-black text-[#1A1A1A] tracking-tighter italic uppercase leading-tight">Order #{order._id.slice(-10).toUpperCase()}</h1>
+                            <h1 className="text-3xl font-bold text-[#1A1A1A] leading-tight">Order #{order._id.slice(-10).toUpperCase()}</h1>
                         </div>
                         
                         <div className="flex gap-3">
@@ -133,13 +133,13 @@ const OrderDetailsPage = () => {
                                  <div className="space-y-3">
                                      <div className={`flex items-center gap-3 px-4 py-2 rounded-full w-fit ${theme.pill} ${theme.text}`}>
                                          <div className={`w-2 h-2 rounded-full ${theme.dot} animate-pulse`} />
-                                         <span className="text-[10px] font-black uppercase tracking-[0.1em]">{theme.label}</span>
+                                         <span className="text-[10px] font-bold uppercase tracking-wide">{theme.label}</span>
                                      </div>
                                      <p className="text-[11px] font-black uppercase tracking-widest text-gray-300">Last updated: {new Date(order.updatedAt).toLocaleDateString()}</p>
                                  </div>
                                  <div className="text-right">
                                      <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Expected Arrival</p>
-                                     <p className="text-xl font-black tracking-tight uppercase italic">{estimatedArrival.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                                     <p className="text-lg font-bold text-gray-900">{estimatedArrival.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
                                  </div>
                              </div>
 
@@ -179,14 +179,14 @@ const OrderDetailsPage = () => {
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         </div>
                                         <div className="flex-1 py-1 space-y-1.5 min-w-0">
-                                            <h5 className="text-[14px] font-bold text-gray-900 uppercase italic tracking-tighter truncate">{item.name}</h5>
+                                            <h5 className="text-[14px] font-bold text-gray-900 truncate">{item.name}</h5>
                                             <div className="flex items-center gap-2.5">
                                                      <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">{formatPrice(item.price)} <span className="text-[8px] opacity-70">x{item.quantity}</span></span>
                                                      {(item.size || item.duration) && (
                                                          <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-[0.1em]">{item.size || item.duration}</span>
                                                      )}
                                             </div>
-                                            <p className="text-xl font-black text-gray-900 pt-3 tracking-tighter">{formatPrice(item.price * item.quantity)}</p>
+                                            <p className="text-lg font-bold text-gray-900 pt-3">{formatPrice(item.price * item.quantity)}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -205,7 +205,7 @@ const OrderDetailsPage = () => {
                                     <div className="space-y-1.5 pt-1">
                                         <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Street Mapping</p>
                                         <p className="text-sm font-bold text-gray-900 leading-snug">{order.deliveryAddress?.street}</p>
-                                        <p className="text-xs font-bold text-gray-400 pt-1 uppercase italic tracking-tighter">{order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.pincode}</p>
+                                        <p className="text-xs font-semibold text-gray-400 pt-1 uppercase">{order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.pincode}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-5 pt-6 border-t border-gray-50">
@@ -222,24 +222,26 @@ const OrderDetailsPage = () => {
                         {/* Bill Summary */}
                         <div className="space-y-6">
                             <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-300 border-l-4 border-black pl-5">Billing Digest</h4>
-                            <div className="bg-[#1A1A1A] text-white p-10 rounded-[3rem] shadow-2xl space-y-6 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 transition-transform duration-1000"><ShoppingBag size={120} /></div>
+                            <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-6 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 text-black group-hover:scale-125 transition-transform duration-1000"><ShoppingBag size={120} /></div>
                                 
                                 <div className="space-y-4 relative z-10">
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
+                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
                                         <span>Items Subtotal</span>
-                                        <span>{formatPrice(order.totalAmount - 40)}</span>
+                                        <span className="text-gray-900">{formatPrice(order.totalAmount - 40)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
+                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
                                         <span>Nature Logistics Fee</span>
-                                        <span>₹40.00</span>
+                                        <span className="text-gray-900">₹40.00</span>
                                     </div>
-                                    <div className="h-px bg-white/5 my-6" />
+                                    <div className="h-px bg-gray-50 my-6" />
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 italic">Grand Total Paid</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">Grand Total Paid</p>
                                         <div className="flex justify-between items-end">
-                                            <span className="text-4xl font-black text-white tracking-tighter italic uppercase">{formatPrice(order.totalAmount)}</span>
-                                            <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest pb-1.5">Success</span>
+                                            <span className="text-2xl font-bold text-gray-900 uppercase">{formatPrice(order.totalAmount)}</span>
+                                            <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest pb-1.5 flex items-center gap-1">
+                                                <CheckCircle2 size={12} /> Success
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

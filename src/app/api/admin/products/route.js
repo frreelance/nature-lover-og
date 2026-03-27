@@ -32,7 +32,7 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { name, description, price, originalPrice, category, type, images, stock, isAvailable, care, potIncluded, duration, serviceDetails } = body;
+    const { name, description, price, originalPrice, category, type, images, stock, isAvailable, care, potIncluded, duration, serviceDetails, size } = body;
 
     if (!name || !description || !price || !category || !type || !images || images.length === 0) {
       return NextResponse.json({ message: "Required fields missing" }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(req) {
       images,
       stock: type === 'plant' ? (stock || 0) : undefined,
       isAvailable: isAvailable !== undefined ? isAvailable : true,
+      size: type === 'plant' ? size : undefined,
       care: type === 'plant' ? care : undefined,
       potIncluded: type === 'plant' ? potIncluded : undefined,
       duration: type === 'service' ? duration : undefined,

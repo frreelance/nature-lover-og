@@ -118,7 +118,7 @@ const AccountPage = () => {
             <Header />
 
             <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-32 pb-40">
-                <div className="flex flex-col lg:flex-row gap-12">
+                <div className="flex flex-col lg:flex-row gap-8">
                     
                     {/* Sidebar */}
                     <aside className="w-full lg:w-72 flex-shrink-0">
@@ -296,14 +296,14 @@ const AccountPage = () => {
                                         <p className="text-gray-400 font-medium text-sm">No orders yet</p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 gap-6">
+                                    <div className="grid grid-cols-1 gap-3">
                                         {filteredOrders.map((order) => {
                                             const theme = getStatusTheme(order.status);
                                             return (
                                                 <div 
                                                     key={order._id} 
                                                     onClick={() => router.push(`/account/orders/${order._id}`)}
-                                                    className="bg-white border border-gray-100 rounded-[2rem] p-6 hover:shadow-lg transition-all group cursor-pointer flex flex-col md:flex-row items-center gap-6"
+                                                    className="bg-white border border-gray-100 rounded-3xl p-5 hover:shadow-md transition-all group cursor-pointer flex flex-col md:flex-row items-center gap-6"
                                                 >
                                                     <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
                                                         <img src={order.items[0]?.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />

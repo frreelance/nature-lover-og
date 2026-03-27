@@ -47,7 +47,7 @@ const ServicesPage = () => {
     let result = [...services];
 
     if (filters.category !== 'all') {
-      result = result.filter(s => s.category?.toLowerCase() === filters.category.toLowerCase());
+      result = result.filter(s => s.category?.toLowerCase().includes(filters.category.toLowerCase()));
     }
 
     result = result.filter(s => s.price >= filters.priceRange[0] && s.price <= filters.priceRange[1]);
@@ -88,8 +88,8 @@ const ServicesPage = () => {
 
   const categories = [
     { name: 'All Services', value: 'all' },
-    { name: '🌳 Park & Lawn Service', value: 'Park & Lawn Services' },
-    { name: '🏡 Home, Balcony & Pot', value: 'Home, Balcony & Pot Services' }
+    { name: '🌳 Park & Lawn Service', value: 'Park and Lawn' },
+    { name: '🏡 Home, Balcony & Pot', value: 'Home / Balcony' }
   ];
 
   const FilterSection = () => (
