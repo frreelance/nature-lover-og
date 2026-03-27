@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, Trash2, Edit, Filter, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, Filter, Eye, X } from 'lucide-react';
 import api from '@/api/api';
 import toast from 'react-hot-toast';
 
@@ -11,6 +11,8 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -49,102 +51,167 @@ const AdminProducts = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Inventory Management</h1>
-          <p className="text-gray-500">Manage your plants and services</p>
+          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Product Catalog</h1>
+          <p className="text-gray-500 text-sm">Efficiently manage your inventory and services</p>
         </div>
         <button 
           onClick={() => router.push('/admin/products/add')}
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-3xl font-bold shadow-xl shadow-green-200 transition-all flex items-center gap-2 transform hover:-translate-y-1 active:scale-95"
+          className="bg-black text-white px-8 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-2 transform active:scale-95 text-sm shadow-xl shadow-gray-200"
         >
-          <Plus size={20} /> Add Product
+          <Plus size={18} /> New Item
         </button>
       </div>
 
-      <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500" size={20} />
+      <div className="bg-white p-3 rounded-2xl border border-gray-100 flex flex-col md:flex-row gap-4 items-center shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input 
             type="text" 
-            placeholder="Search by name or category..."
-            className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-green-500 outline-none transition-all"
+            placeholder="Search catalog..."
+            className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-1 focus:ring-black outline-none text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
-            <button 
-                onClick={() => setFilterType('all')}
-                className={`px-6 py-4 rounded-2xl font-semibold transition-all ${filterType === 'all' ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
-            >
-                All
-            </button>
-            <button 
-                onClick={() => setFilterType('plant')}
-                className={`px-6 py-4 rounded-2xl font-semibold transition-all ${filterType === 'plant' ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
-            >
-                Plants
-            </button>
-            <button 
-                onClick={() => setFilterType('service')}
-                className={`px-6 py-4 rounded-2xl font-semibold transition-all ${filterType === 'service' ? 'bg-green-600 text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
-            >
-                Services
-            </button>
+        <div className="flex gap-1.5 bg-gray-50 p-1 rounded-xl">
+            {['all', 'plant', 'service'].map(type => (
+                <button 
+                    key={type}
+                    onClick={() => setFilterType(type)}
+                    className={`px-5 py-2 rounded-lg text-xs font-bold capitalize transition-all ${filterType === type ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-black'}`}
+                >
+                    {type === 'all' ? 'Everything' : type + 's'}
+                </button>
+            ))}
         </div>
       </div>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center animate-pulse text-gray-400 font-medium">Loading inventory...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <div key={product._id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-gray-50 group transform hover:-translate-y-2">
-              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute top-4 left-4">
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md border border-white/20 ${product.type === 'plant' ? 'bg-green-500/80 text-white' : 'bg-blue-500/80 text-white'}`}>
-                    {product.type}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="p-8">
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-green-600 uppercase tracking-widest mb-1">{product.category}</p>
-                  <h3 className="text-xl font-bold text-gray-800 line-clamp-1">{product.name}</h3>
-                </div>
-                
-                <div className="flex justify-between items-end mb-8">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-gray-900">₹{product.price}</span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-gray-400 line-through">₹{product.originalPrice}</span>
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100">
+                <th className="px-6 py-4">Item</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Price</th>
+                <th className="px-6 py-4">Availability</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filteredProducts.map((product) => (
+                <tr key={product._id} className="group hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900 leading-tight">{product.name}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter italic">{product.type}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{product.category}</span>
+                  </td>
+                  <td className="px-6 py-3">
+                    <p className="text-sm font-black text-gray-900">₹{product.price}</p>
+                  </td>
+                  <td className="px-6 py-3">
+                    {product.type === 'plant' ? (
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {product.stock > 0 ? `${product.stock} units` : 'Legacy'}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Service</span>
                     )}
+                  </td>
+                  <td className="px-6 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => { setSelectedProduct(product); setShowModal(true); }}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Quick View"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/admin/products/edit/${product._id}`)}
+                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                        title="Edit Item"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button 
+                        onClick={() => deleteProduct(product._id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        title="Delete"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Detail View Modal */}
+      {showModal && selectedProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-scale-in">
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-1/2 aspect-square bg-gray-50">
+                <img src={selectedProduct.images[0]} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div className="md:w-1/2 p-8 flex flex-col">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 mb-1">{selectedProduct.category}</p>
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight">{selectedProduct.name}</h3>
                   </div>
-                  {product.type === 'plant' && (
-                    <span className={`text-xs font-bold ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                    </span>
-                  )}
+                  <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors"><X size={20}/></button>
                 </div>
 
-                <div className="flex gap-3 pt-6 border-t border-gray-100">
-                  <button 
-                    onClick={() => router.push(`/admin/products/edit/${product._id}`)}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 rounded-2xl font-bold transition-all"
-                  >
-                    <Edit size={18} /> Edit
-                  </button>
-                  <button 
-                    onClick={() => deleteProduct(product._id)}
-                    className="p-4 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-2xl transition-all"
-                  >
-                    <Trash2 size={24} />
-                  </button>
+                <div className="space-y-6 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-gray-900">₹{selectedProduct.price}</span>
+                    {selectedProduct.originalPrice && (
+                      <span className="text-sm text-gray-400 line-through">₹{selectedProduct.originalPrice}</span>
+                    )}
+                  </div>
+
+                  <div className="space-y-4 pt-6 border-t border-gray-50 text-sm text-gray-500 leading-relaxed">
+                    <p>{selectedProduct.description || 'No description provided.'}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-2xl">
+                        <p className="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Type</p>
+                        <p className="text-gray-900 font-bold capitalize">{selectedProduct.type}</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-2xl">
+                        <p className="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Available</p>
+                        <p className="text-gray-900 font-bold">{selectedProduct.stock || '∞'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                   <button 
+                      onClick={() => router.push(`/admin/products/edit/${selectedProduct._id}`)}
+                      className="flex-1 bg-black text-white py-4 rounded-xl font-bold text-sm uppercase tracking-widest active:scale-95 transition-all"
+                   >
+                     Update Profile
+                   </button>
                 </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
 
