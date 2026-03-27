@@ -31,7 +31,7 @@ export const AdminProvider = ({ children }) => {
         return;
       }
 
-      const response = await api.get("/user/current-user");
+      const response = await api.get("/api/user/me");
       
       if (response.data?.user?.role === "admin") {
         setIsAdmin(true);

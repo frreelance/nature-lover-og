@@ -8,7 +8,7 @@ export async function POST(req) {
     const user = await getAuthUser(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const { itemId, name, type, price, quantity = 1, image, category } = await req.json();
+    const { itemId, name, type, price, quantity = 1, image, category, size, duration } = await req.json();
 
     await connectDB();
     let cart = await Cart.findOne({ user: user._id });
@@ -19,8 +19,12 @@ export async function POST(req) {
     const existingIndex = cart.items.findIndex(i => i.itemId === itemId && i.type === type);
     if (existingIndex > -1) {
       cart.items[existingIndex].quantity += (quantity || 1);
+      // Update metadata in case it changed
+      cart.items[existingIndex].size = size;
+      cart.items[existingIndex].duration = duration;
+      cart.items[existingIndex].category = category;
     } else {
-      cart.items.push({ itemId, name, type, price, quantity, image, category });
+      cart.items.push({ itemId, name, type, price, quantity, image, category, size, duration });
     }
 
     await cart.save();

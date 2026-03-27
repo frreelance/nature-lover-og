@@ -14,15 +14,15 @@ const cartSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     quantity: { type: Number, required: true, min: 1 },
     image: String,
-    category: String
+    category: String,
+    size: String,
+    duration: String
   }],
   totalAmount: { type: Number, default: 0 },
   totalItems: { type: Number, default: 0 }
 }, {
   timestamps: true
 });
-
-// Index for better query performance (Already created by unique: true)
 
 cartSchema.pre('save', function(next) {
   this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);

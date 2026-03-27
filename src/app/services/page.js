@@ -68,6 +68,8 @@ const Services = () => {
         name: service.name, 
         price: service.price, 
         image: service.images[0], 
+        category: service.category,
+        duration: service.duration,
         quantity 
     };
     if (!requireAuthOrOpenModal(serviceWithQuantity, 'service')) return;

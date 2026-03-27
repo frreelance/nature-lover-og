@@ -85,6 +85,8 @@ const Plants = () => {
         name: plant.name, 
         price: plant.price, 
         image: plant.images[0], 
+        category: plant.category,
+        size: plant.size,
         quantity 
     };
     if (!requireAuthOrOpenModal(plantWithQuantity, 'plant')) return;
