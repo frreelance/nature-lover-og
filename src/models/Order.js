@@ -27,6 +27,7 @@ const orderSchema = new mongoose.Schema({
     city: String,
     state: String,
     pincode: String,
+    addressType: { type: String, enum: ['home', 'office', 'other'], default: 'home' },
     country: { type: String, default: 'India' }
   },
   contactInfo: {

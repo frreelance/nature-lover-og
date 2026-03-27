@@ -74,13 +74,15 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (item, type = 'plant') => {
     try {
       const cartItem = {
-        itemId: item.id.toString(),
+        itemId: (item._id || item.id || item.itemId).toString(),
         name: item.name || item.title,
-        type,
-        price: typeof item.price === 'number' ? item.price : 0,
-        quantity: item.quantity || 1,
-        image: item.image || item.image_url,
-        category: item.category
+        type: type || item.type,
+        price: Number(item.price) || 0,
+        quantity: Number(item.quantity) || 1,
+        image: item.images?.[0] || item.image || item.image_url,
+        category: item.category,
+        size: item.size,
+        duration: item.duration
       };
 
       const token = localStorage.getItem('accessToken');

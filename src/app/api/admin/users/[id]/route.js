@@ -11,7 +11,7 @@ export async function GET(req, { params }) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     await connectDB();
     const targetUser = await User.findById(id).select('-password -refreshToken');
     if (!targetUser) return NextResponse.json({ message: "User not found" }, { status: 404 });

@@ -36,8 +36,13 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: "Cart is empty" }, { status: 400 });
     }
 
+    // Pincode validation: 6 digits
+    if (!deliveryAddress?.pincode || !/^\d{6}$/.test(deliveryAddress.pincode)) {
+      return NextResponse.json({ success: false, message: "Please provide a valid 6-digit pincode" }, { status: 400 });
+    }
+
     const estimatedDeliveryDate = new Date();
-    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 4);
 
     const order = await Order.create({
       user: user._id,
@@ -56,7 +61,11 @@ export async function POST(req) {
     cart.totalItems = 0;
     await cart.save();
 
-    return NextResponse.json({ success: true, data: order, message: "Order created" }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      data: order, 
+      message: "Order placed successfully! Your order will be delivered in 3-5 days. For help, contact +91 9110750796" 
+    }, { status: 201 });
   } catch (error) {
     console.error("Create Order Error:", error);
     return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
