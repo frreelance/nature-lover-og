@@ -9,7 +9,7 @@ import {
     Package, ArrowLeft, MapPin, 
     Phone, Mail, Clock, ChevronRight, 
     Dot, Loader2, Download, Printer,
-    Calendar, Truck, CheckCircle2, ShoppingBag
+    Calendar, Truck, CheckCircle2, ShoppingBag, X
 } from 'lucide-react';
 import api from '@/api/api';
 import Link from 'next/link';
@@ -21,6 +21,8 @@ const OrderDetailsPage = () => {
     const router = useRouter();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) router.push('/auth?mode=login');
@@ -57,12 +59,33 @@ const OrderDetailsPage = () => {
 
     const getStatusTheme = (status) => {
         switch (status) {
-            case 'completed': 
+            case 'delivered': 
                 return { label: 'Delivered', dot: 'bg-green-500', text: 'text-green-600', pill: 'bg-green-50' };
+            case 'shipped': 
+                return { label: 'Shipped', dot: 'bg-blue-500', text: 'text-blue-600', pill: 'bg-blue-50' };
             case 'cancelled': 
                 return { label: 'Cancelled', dot: 'bg-red-500', text: 'text-red-500', pill: 'bg-red-50' };
             default: 
-                return { label: 'In transit', dot: 'bg-orange-500', text: 'text-orange-500', pill: 'bg-orange-50' };
+                return { label: 'Pending', dot: 'bg-orange-500', text: 'text-orange-500', pill: 'bg-orange-50' };
+        }
+    };
+
+    const handleCancelOrder = async () => {
+        setIsCancelling(true);
+        const loadingToast = toast.loading('Processing cancellation...');
+        try {
+            const response = await api.patch(`/api/orders/${id}`, { status: 'cancelled' });
+            if (response.data.success) {
+                toast.success('Order cancelled successfully', { id: loadingToast });
+                setShowCancelModal(false);
+                loadOrder();
+            } else {
+                toast.error(response.data.message || 'Cancellation failed', { id: loadingToast });
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Error cancelling order', { id: loadingToast });
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -112,6 +135,16 @@ const OrderDetailsPage = () => {
                         </div>
                         
                         <div className="flex gap-3">
+                             {order.status === 'pending' && (
+                                 <button 
+                                     onClick={() => setShowCancelModal(true)}
+                                     disabled={isCancelling}
+                                     className="px-8 py-3.5 bg-red-50 text-red-600 border border-red-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                 >
+                                     {isCancelling ? <Loader2 size={14} className="animate-spin" /> : null}
+                                     Cancel Order
+                                 </button>
+                             )}
                              <button className="p-3.5 bg-white border border-gray-100 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm active:scale-95">
                                  <Printer size={18} />
                              </button>
@@ -146,24 +179,20 @@ const OrderDetailsPage = () => {
                              {/* Shipment Progress Mock */}
                              <div className="relative pt-4 px-2">
                                 <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-50 -translate-y-1/2 rounded-full" />
-                                <div className={`absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 rounded-full transition-all duration-1000 ${order.status === 'completed' ? 'w-full' : 'w-2/3'}`} />
+                                <div className={`absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 rounded-full transition-all duration-1000 ${order.status === 'delivered' ? 'w-full' : (order.status === 'shipped' ? 'w-2/3' : 'w-1/3')}`} />
                                 
                                 <div className="relative flex justify-between">
                                     <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
                                         <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg"><Package size={16}/></div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest">Ordered</p>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest">Ordered</p>
                                     </div>
                                     <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
-                                        <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg"><Clock size={16}/></div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest">Processed</p>
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${['shipped', 'delivered'].includes(order.status) ? 'bg-black text-white shadow-lg' : 'bg-gray-50 text-gray-200'}`}><Truck size={16}/></div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest">Shipped</p>
                                     </div>
                                     <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
-                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${['processing', 'completed'].includes(order.status) ? 'bg-black text-white shadow-lg' : 'bg-gray-50 text-gray-200'}`}><Truck size={16}/></div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest">Shipped</p>
-                                    </div>
-                                    <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
-                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${order.status === 'completed' ? 'bg-green-600 text-white shadow-lg ring-4 ring-green-50' : 'bg-gray-50 text-gray-200'}`}><CheckCircle2 size={16}/></div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest">Delivered</p>
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${order.status === 'delivered' ? 'bg-green-600 text-white shadow-lg ring-4 ring-green-50' : 'bg-gray-50 text-gray-200'}`}><CheckCircle2 size={16}/></div>
+                                        <p className="text-[9px] font-bold uppercase tracking-widest">Delivered</p>
                                     </div>
                                 </div>
                              </div>
@@ -253,6 +282,38 @@ const OrderDetailsPage = () => {
             </div>
 
             <Footer />
+
+            {/* Custom Cancellation Modal */}
+            {showCancelModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl border border-gray-100 animate-slide-up">
+                        <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-8 mx-auto">
+                            <X size={32} strokeWidth={3} />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 text-center uppercase tracking-tighter mb-4">Cancel Shipment?</h3>
+                        <p className="text-sm font-medium text-gray-400 text-center leading-relaxed mb-10">
+                            This action is permanent. Your items will be released back to the inventory and the order will be permanently marked as cancelled.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button 
+                                onClick={handleCancelOrder}
+                                disabled={isCancelling}
+                                className="w-full py-5 bg-black text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isCancelling && <Loader2 size={14} className="animate-spin" />}
+                                Confirm Cancellation
+                            </button>
+                            <button 
+                                onClick={() => setShowCancelModal(false)}
+                                disabled={isCancelling}
+                                className="w-full py-5 text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                            >
+                                Keep Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

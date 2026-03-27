@@ -23,6 +23,8 @@ const AccountPage = () => {
     const router = useRouter();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState({ pages: 1, total: 0 });
     const [activeSection, setActiveSection] = useState('My Orders');
     const [orderFilter, setOrderFilter] = useState('All');
     
@@ -39,14 +41,21 @@ const AccountPage = () => {
 
     useEffect(() => {
         if (isAuthenticated) loadOrders();
-    }, [isAuthenticated]);
+    }, [isAuthenticated, currentPage, orderFilter]);
 
     const loadOrders = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/orders');
+            const response = await api.get('/api/orders', {
+                params: {
+                    page: currentPage,
+                    limit: 8,
+                    status: orderFilter !== 'All' ? orderFilter.toLowerCase() : undefined
+                }
+            });
             if (response.data.success) {
                 setOrders(response.data.data.orders || []);
+                setPagination(response.data.pagination);
             }
         } catch (error) {
             console.error('Error loading orders:', error);
@@ -79,8 +88,7 @@ const AccountPage = () => {
     };
 
     const getFilteredOrders = () => {
-        if (orderFilter === 'All') return orders;
-        return orders.filter(o => getStatusTheme(o.status).label === orderFilter);
+        return orders; // Filtering happens on server now
     };
 
     const getUniqueAddresses = () => {
@@ -271,10 +279,13 @@ const AccountPage = () => {
                         {activeSection === 'My Orders' && (
                             <div className="space-y-8 animate-fade-in">
                                 <div className="flex flex-wrap items-center gap-3 pb-8 border-b border-gray-100">
-                                    {['All', 'In Progress', 'Delivered', 'Cancelled'].map(pill => (
+                                    {['All', 'Pending', 'Shipped', 'Delivered', 'Cancelled'].map(pill => (
                                         <button
                                             key={pill}
-                                            onClick={() => setOrderFilter(pill)}
+                                            onClick={() => {
+                                                setOrderFilter(pill);
+                                                setCurrentPage(1);
+                                            }}
                                             className={`px-7 py-3 rounded-full text-[11px] font-bold transition-all uppercase tracking-widest ${
                                                 orderFilter === pill 
                                                 ? 'bg-black text-white shadow-lg' 
@@ -322,6 +333,36 @@ const AccountPage = () => {
                                                 </div>
                                             );
                                         })}
+                                    </div>
+                                )}
+
+                                {!loading && pagination.pages > 1 && (
+                                    <div className="flex justify-center items-center gap-4 pt-10">
+                                        <button 
+                                            disabled={currentPage === 1}
+                                            onClick={() => setCurrentPage(p => p - 1)}
+                                            className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20"
+                                        >
+                                            Prev
+                                        </button>
+                                        <div className="flex gap-2">
+                                            {Array.from({ length: pagination.pages }).map((_, i) => (
+                                                <button 
+                                                    key={i}
+                                                    onClick={() => setCurrentPage(i + 1)}
+                                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+                                                >
+                                                    {i + 1}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button 
+                                            disabled={currentPage === pagination.pages}
+                                            onClick={() => setCurrentPage(p => p + 1)}
+                                            className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20"
+                                        >
+                                            Next
+                                        </button>
                                     </div>
                                 )}
                             </div>

@@ -20,8 +20,10 @@ const ServicesPage = () => {
   const [filters, setFilters] = useState({
     category: 'all',
     priceRange: [0, 10000],
-    sort: 'popular'
+    sort: 'popular',
+    page: 1
   });
+  const [pagination, setPagination] = useState({ pages: 1, total: 0 });
 
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -29,34 +31,33 @@ const ServicesPage = () => {
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [filters.category, filters.priceRange, filters.page, filters.sort]);
 
   const fetchServices = async () => {
     try {
-      const { data } = await api.get('/api/products?type=service');
-      setServices(data.data);
-      setFilteredServices(data.data);
+      setLoading(true);
+      const { data } = await api.get('/api/products', {
+          params: {
+              type: 'service',
+              category: filters.category !== 'all' ? filters.category : undefined,
+              maxPrice: filters.priceRange[1],
+              page: filters.page,
+              limit: 9
+          }
+      });
+      
+      let result = data.data;
+      if (filters.sort === 'price-low') result.sort((a, b) => a.price - b.price);
+      if (filters.sort === 'price-high') result.sort((a, b) => b.price - a.price);
+      
+      setFilteredServices(result);
+      setPagination(data.pagination);
     } catch (error) {
       toast.error('Failed to load services');
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    let result = [...services];
-
-    if (filters.category !== 'all') {
-      result = result.filter(s => s.category?.toLowerCase().includes(filters.category.toLowerCase()));
-    }
-
-    result = result.filter(s => s.price >= filters.priceRange[0] && s.price <= filters.priceRange[1]);
-
-    if (filters.sort === 'price-low') result.sort((a, b) => a.price - b.price);
-    if (filters.sort === 'price-high') result.sort((a, b) => b.price - a.price);
-
-    setFilteredServices(result);
-  }, [filters, services]);
 
   const handleAddToBag = async (service) => {
     const serviceWithQuantity = { 
@@ -104,7 +105,7 @@ const ServicesPage = () => {
                 type="radio" 
                 name="category"
                 checked={filters.category === cat.value}
-                onChange={() => setFilters(prev => ({ ...prev, category: cat.value }))}
+                onChange={() => setFilters(prev => ({ ...prev, category: cat.value, page: 1 }))}
                 className="w-3.5 h-3.5 mt-0.5 accent-blue-600 border-gray-100" 
               />
               <span className={`text-xs font-bold leading-tight ${filters.category === cat.value ? 'text-blue-600' : 'text-gray-400 group-hover:text-black'} transition-colors`}>
@@ -125,7 +126,7 @@ const ServicesPage = () => {
                 max="10000" 
                 step="500"
                 value={filters.priceRange[1]}
-                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)] }))}
+                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)], page: 1 }))}
                 className="w-full h-1 accent-blue-600 bg-gray-50 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest">
@@ -231,6 +232,36 @@ const ServicesPage = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {!loading && filteredServices.length > 0 && pagination.pages > 1 && (
+                <div className="mt-16 flex justify-center items-center gap-4 animate-fade-in">
+                    <button 
+                        disabled={filters.page === 1}
+                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                        className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20 flex items-center gap-2"
+                    >
+                        Prev
+                    </button>
+                    <div className="flex gap-2">
+                        {Array.from({ length: pagination.pages }).map((_, i) => (
+                            <button 
+                                key={i}
+                                onClick={() => setFilters(prev => ({ ...prev, page: i + 1 }))}
+                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${filters.page === i + 1 ? 'bg-black text-white shadow-xl shadow-blue-100 scale-110' : 'text-gray-400 hover:bg-gray-50'}`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                    <button 
+                        disabled={filters.page === pagination.pages}
+                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                        className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20 flex items-center gap-2"
+                    >
+                        Next
+                    </button>
                 </div>
             )}
 

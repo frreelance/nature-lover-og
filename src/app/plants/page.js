@@ -21,8 +21,10 @@ const PlantsPage = () => {
     environment: 'all',
     size: 'all',
     priceRange: [0, 5000],
-    sort: 'newest'
+    sort: 'newest',
+    page: 1
   });
+  const [pagination, setPagination] = useState({ pages: 1, total: 0 });
 
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -30,41 +32,34 @@ const PlantsPage = () => {
 
   useEffect(() => {
     fetchPlants();
-  }, []);
+  }, [filters.environment, filters.size, filters.priceRange, filters.page, filters.sort]);
 
   const fetchPlants = async () => {
     try {
-      const { data } = await api.get('/api/products?type=plant');
-      setPlants(data.data);
-      setFilteredPlants(data.data);
+      setLoading(true);
+      const { data } = await api.get('/api/products', {
+        params: {
+          type: 'plant',
+          category: filters.environment !== 'all' ? filters.environment : undefined,
+          size: filters.size !== 'all' ? filters.size : undefined,
+          maxPrice: filters.priceRange[1],
+          page: filters.page,
+          limit: 12
+        }
+      });
+      
+      let result = data.data;
+      if (filters.sort === 'price-low') result.sort((a, b) => a.price - b.price);
+      if (filters.sort === 'price-high') result.sort((a, b) => b.price - a.price);
+      
+      setFilteredPlants(result);
+      setPagination(data.pagination);
     } catch (error) {
       toast.error('Failed to load plants');
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    let result = [...plants];
-
-    if (filters.environment !== 'all') {
-      result = result.filter(p => p.category?.toLowerCase().includes(filters.environment.toLowerCase()));
-    }
-
-    if (filters.size !== 'all') {
-      result = result.filter(p => {
-        if (!p.size) return false;
-        return p.size.toLowerCase() === filters.size.toLowerCase();
-      });
-    }
-
-    result = result.filter(p => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]);
-
-    if (filters.sort === 'price-low') result.sort((a, b) => a.price - b.price);
-    if (filters.sort === 'price-high') result.sort((a, b) => b.price - a.price);
-
-    setFilteredPlants(result);
-  }, [filters, plants]);
 
   const handleAddToBag = async (plant) => {
     const plantWithQuantity = { 
@@ -106,7 +101,7 @@ const PlantsPage = () => {
                 type="radio" 
                 name="environment"
                 checked={filters.environment === type}
-                onChange={() => setFilters(prev => ({ ...prev, environment: type }))}
+                onChange={() => setFilters(prev => ({ ...prev, environment: type, page: 1 }))}
                 className="w-3.5 h-3.5 accent-black" 
               />
               <span className={`text-xs font-bold ${filters.environment === type ? 'text-black' : 'text-gray-400 group-hover:text-black'} transition-colors capitalize`}>
@@ -127,7 +122,7 @@ const PlantsPage = () => {
                 type="radio" 
                 name="size"
                 checked={filters.size === size}
-                onChange={() => setFilters(prev => ({ ...prev, size: size }))}
+                onChange={() => setFilters(prev => ({ ...prev, size: size, page: 1 }))}
                 className="w-3.5 h-3.5 accent-black" 
               />
               <span className={`text-xs font-bold ${filters.size === size ? 'text-black' : 'text-gray-400 group-hover:text-black'} transition-colors capitalize`}>
@@ -148,7 +143,7 @@ const PlantsPage = () => {
                 max="5000" 
                 step="100"
                 value={filters.priceRange[1]}
-                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)] }))}
+                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)], page: 1 }))}
                 className="w-full accent-black h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest">
@@ -245,6 +240,36 @@ const PlantsPage = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {!loading && filteredPlants.length > 0 && pagination.pages > 1 && (
+                <div className="mt-20 flex justify-center items-center gap-4">
+                    <button 
+                        disabled={filters.page === 1}
+                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                        className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20"
+                    >
+                        Prev
+                    </button>
+                    <div className="flex gap-2">
+                        {Array.from({ length: pagination.pages }).map((_, i) => (
+                            <button 
+                                key={i}
+                                onClick={() => setFilters(prev => ({ ...prev, page: i + 1 }))}
+                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${filters.page === i + 1 ? 'bg-black text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50'}`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                    <button 
+                        disabled={filters.page === pagination.pages}
+                        onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                        className="px-6 py-3 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all disabled:opacity-20"
+                    >
+                        Next
+                    </button>
                 </div>
             )}
 
