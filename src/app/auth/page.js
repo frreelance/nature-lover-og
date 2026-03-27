@@ -39,7 +39,7 @@ const AuthContent = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'admin') router.push('/admin/dashboard');
-      else router.push('/orders');
+      else router.push('/plants');
     }
   }, [isAuthenticated, user, router]);
 
@@ -64,7 +64,7 @@ const AuthContent = () => {
         }
       }
       if (result.user?.role === 'admin') router.push('/admin/dashboard');
-      else router.push('/orders');
+      else router.push('/plants');
     } else {
       setError(result.message || 'Login failed');
     }
@@ -82,7 +82,7 @@ const AuthContent = () => {
     }
     const result = await register(registerData.name, registerData.email, registerData.password, registerData.phone);
     if (result.success) {
-      router.push('/orders');
+      router.push('/plants');
     } else {
       setError(result.message || 'Registration failed');
     }

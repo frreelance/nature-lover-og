@@ -33,7 +33,7 @@ const Header = () => {
     ? [
         { name: 'Services', href: '/services' },
         { name: 'Buy Plants', href: '/plants' },
-        { name: 'Orders', href: '/orders' }
+        { name: 'My Account', href: '/account' }
       ]
     : [
         { name: 'Home', href: '/' },
