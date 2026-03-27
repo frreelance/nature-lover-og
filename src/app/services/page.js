@@ -1,26 +1,31 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { ShoppingCart, Search, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, ShoppingCart, Star, X, SlidersHorizontal, Wrench, Check } from 'lucide-react';
 import ScrollToTop from '@/utils/ScrollToTop';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import Toast from '@/components/Toast';
+import toast from 'react-hot-toast';
 import api from '@/api/api';
 
-const Services = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+const ServicesPage = () => {
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [quantities, setQuantities] = useState({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Filter States
+  const [filters, setFilters] = useState({
+    category: 'all',
+    priceRange: [0, 10000],
+    sort: 'popular'
+  });
+
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
 
   useEffect(() => {
     fetchServices();
@@ -32,37 +37,28 @@ const Services = () => {
       setServices(data.data);
       setFilteredServices(data.data);
     } catch (error) {
-      console.error('Error fetching services:', error);
+      toast.error('Failed to load services');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let filtered = services;
-    if (searchTerm) {
-      filtered = filtered.filter(service =>
-        service.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(service => service.category === selectedCategory);
-    }
-    setFilteredServices(filtered);
-  }, [searchTerm, selectedCategory, services]);
+    let result = [...services];
 
-  const requireAuthOrOpenModal = (pendingItem, pendingType) => {
-    if (isAuthenticated) return true;
-    localStorage.setItem(
-      'pendingAddToCart',
-      JSON.stringify({ item: pendingItem, type: pendingType, ts: Date.now() })
-    );
-    router.push('/auth?mode=login');
-    return false;
-  };
+    if (filters.category !== 'all') {
+      result = result.filter(s => s.category?.toLowerCase() === filters.category.toLowerCase());
+    }
 
-  const handleOrderNow = async (service) => {
-    const quantity = quantities[service._id] || 1;
+    result = result.filter(s => s.price >= filters.priceRange[0] && s.price <= filters.priceRange[1]);
+
+    if (filters.sort === 'price-low') result.sort((a, b) => a.price - b.price);
+    if (filters.sort === 'price-high') result.sort((a, b) => b.price - a.price);
+
+    setFilteredServices(result);
+  }, [filters, services]);
+
+  const handleAddToBag = async (service) => {
     const serviceWithQuantity = { 
         id: service._id, 
         name: service.name, 
@@ -70,128 +66,209 @@ const Services = () => {
         image: service.images[0], 
         category: service.category,
         duration: service.duration,
-        quantity 
+        quantity: 1
     };
-    if (!requireAuthOrOpenModal(serviceWithQuantity, 'service')) return;
-    const result = await addToCart(serviceWithQuantity, 'service');
-    setToast({
-      isVisible: true,
-      message: result?.success ? 'Added to cart successfully!' : (result?.message || 'Failed to add to cart'),
-      type: result?.success ? 'success' : 'error'
-    });
-    setQuantities(prev => ({ ...prev, [service._id]: 1 }));
+    
+    if (!isAuthenticated) {
+      localStorage.setItem('pendingAddToCart', JSON.stringify({ item: serviceWithQuantity, type: 'service', ts: Date.now() }));
+      router.push('/auth?mode=login');
+      toast('Login to book service', { icon: '🔑' });
+      return;
+    }
+    
+    const loadingToast = toast.loading('Booking...');
+    try {
+        const res = await addToCart(serviceWithQuantity, 'service');
+        if (res?.success) toast.success(`${service.name} booked!`, { id: loadingToast });
+        else toast.error('Failed', { id: loadingToast });
+    } catch (err) {
+        toast.error('Error', { id: loadingToast });
+    }
   };
 
+  const categories = [
+    { name: 'All Services', value: 'all' },
+    { name: '🌳 Park & Lawn Service', value: 'Park & Lawn Services' },
+    { name: '🏡 Home, Balcony & Pot', value: 'Home, Balcony & Pot Services' }
+  ];
+
+  const FilterSection = () => (
+    <div className="space-y-10">
+      {/* Category Filter */}
+      <div>
+        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-gray-300">Category</h4>
+        <div className="space-y-2.5">
+          {categories.map((cat) => (
+            <label key={cat.value} className="flex items-start gap-3 cursor-pointer group">
+              <input 
+                type="radio" 
+                name="category"
+                checked={filters.category === cat.value}
+                onChange={() => setFilters(prev => ({ ...prev, category: cat.value }))}
+                className="w-3.5 h-3.5 mt-0.5 accent-blue-600 border-gray-100" 
+              />
+              <span className={`text-xs font-bold leading-tight ${filters.category === cat.value ? 'text-blue-600' : 'text-gray-400 group-hover:text-black'} transition-colors`}>
+                {cat.name}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-gray-300">Budget Range</h4>
+        <div className="space-y-2">
+            <input 
+                type="range" 
+                min="0" 
+                max="10000" 
+                step="500"
+                value={filters.priceRange[1]}
+                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)] }))}
+                className="w-full h-1 accent-blue-600 bg-gray-50 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                <span>₹0</span>
+                <span>Max: ₹{filters.priceRange[1]}</span>
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-inter">
       <ScrollToTop />
       <Header />
       
-      <section className="relative h-[40vh] overflow-hidden pt-10">
-        <div className="absolute inset-0 z-0 bg-green-900">
-          <div 
-            className="w-full h-full bg-cover bg-center opacity-40"
-            style={{ backgroundImage: `url('/LandingPage/land_scaping.jpg')` }}
-          />
-        </div>
-        <div className="relative z-20 h-full flex items-center justify-center text-center px-4">
-          <div className="animate-fade-in-up">
-            <h1 className="text-4xl md:text-6xl font-black mb-6 text-white">
-              Green <span className="text-green-400">Services</span>
-            </h1>
-            <p className="text-lg text-white/90 max-w-2xl mx-auto font-medium">
-              Expert gardening and maintenance solutions for your home and office.
-            </p>
-          </div>
-        </div>
-      </section>
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16 pt-32">
+        <div className="flex flex-col lg:flex-row gap-12">
+          
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-64 flex-shrink-0 animate-fade-in pr-6 border-r border-gray-50">
+            <h2 className="text-xl font-black uppercase tracking-tighter mb-8">Service Plan</h2>
+            <FilterSection />
+          </aside>
 
-      <section className="py-8 bg-white border-b sticky top-16 z-30">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search services..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          {loading ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[1,2,3].map(i => (
-                    <div key={i} className="aspect-video bg-gray-100 rounded-[2rem] animate-pulse" />
-                ))}
-             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredServices.map((service) => (
-                <div key={service._id} className="group bg-white rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all border border-gray-100 overflow-hidden transform hover:-translate-y-2">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gray-50">
-                    <img src={service.images[0]} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <span className="absolute top-6 right-6 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-green-700 shadow-sm">{service.duration || 'Flexible'}</span>
-                  </div>
-                  <div className="p-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2 truncate">{service.name}</h3>
-                    <p className="text-gray-500 text-sm mb-6 line-clamp-2 leading-relaxed">{service.description}</p>
-                    
-                    <div className="space-y-3 mb-8">
-                        {service.serviceDetails?.slice(0, 3).map((detail, idx) => (
-                            <div key={idx} className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                <div className="p-1 bg-green-100 text-green-600 rounded-full"><Check size={12} /></div>
-                                {detail}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starting from</p>
-                        <span className="text-3xl font-black text-green-600">₹{service.price}</span>
-                      </div>
-                      <div className="text-right">
-                         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Category</span>
-                         <span className="text-sm font-bold text-gray-800">{service.category}</span>
-                      </div>
-                    </div>
-                    
+          {/* Main Content */}
+          <main className="flex-1">
+            {/* Toolbar */}
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
+                <div className="flex items-center gap-4">
                     <button 
-                        onClick={() => handleOrderNow(service)} 
-                        className="w-full bg-gray-900 hover:bg-green-600 text-white py-5 rounded-2xl font-black transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-xl shadow-gray-200"
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="lg:hidden flex items-center gap-2 px-3 py-1.5 border border-gray-100 rounded-lg text-[10px] font-bold uppercase tracking-widest"
                     >
-                      <ShoppingCart className="h-5 w-5" /> Book Service
+                        <SlidersHorizontal size={12} /> Filter
                     </button>
-                  </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-200">
+                        {filteredServices.length} Service Packs
+                    </span>
                 </div>
-              ))}
+                
+                <div className="flex items-center gap-3">
+                    <select 
+                        value={filters.sort}
+                        onChange={(e) => setFilters(prev => ({ ...prev, sort: e.target.value }))}
+                        className="text-[10px] font-bold uppercase tracking-widest outline-none bg-transparent cursor-pointer text-gray-400 hover:text-black transition-colors"
+                    >
+                        <option value="popular">Sorted by: Popular</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                    </select>
+                </div>
             </div>
-          )}
 
-          {!loading && filteredServices.length === 0 && (
-            <div className="text-center py-20">
-                <p className="text-2xl font-bold text-gray-300">No services found.</p>
-            </div>
-          )}
+            {/* Grid (Compact for Services) */}
+            {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[1,2,3].map(i => (
+                        <div key={i} className="space-y-4 animate-pulse">
+                            <div className="aspect-[16/10] bg-gray-50 rounded-[2rem]" />
+                            <div className="h-4 w-2/3 bg-gray-50 rounded" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+                    {filteredServices.map((service) => (
+                        <div key={service._id} className="group animate-fade-in flex flex-col">
+                            <div className="relative aspect-[16/10] rounded-[2rem] overflow-hidden bg-gray-50 mb-5 border border-gray-50 shadow-sm group-hover:shadow-md transition-all duration-500">
+                                <img src={service.images[0]} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                {service.duration && (
+                                     <div className="absolute top-4 left-4">
+                                         <span className="bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest text-blue-900 border border-blue-100 shadow-sm">{service.duration} Session</span>
+                                     </div>
+                                )}
+                            </div>
+                            
+                            <div className="flex flex-col flex-1 pl-2">
+                                <div className="flex justify-between items-start mb-2">
+                                     <div className="space-y-1">
+                                         <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{service.category}</p>
+                                         <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-900 transition-colors uppercase italic tracking-tighter">{service.name}</h3>
+                                     </div>
+                                </div>
+                                
+                                <div className="space-y-1 mb-6">
+                                    {service.serviceDetails?.slice(0, 2).map((detail, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                                            <Check size={8} className="text-blue-600" /> {detail}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center justify-between mt-auto">
+                                    <p className="text-2xl font-black tracking-tighter text-gray-900">₹{service.price}.00</p>
+                                    <button 
+                                        onClick={() => handleAddToBag(service)}
+                                        className="bg-blue-50 text-blue-700 px-6 py-2.5 rounded-xl font-black hover:bg-black hover:text-white transition-all transform active:scale-95 text-[10px] uppercase tracking-widest shadow-sm hover:shadow-lg"
+                                    >
+                                        Add to Bag
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {!loading && filteredServices.length === 0 && (
+                <div className="text-center py-32">
+                    <Wrench className="h-10 w-10 text-gray-100 mx-auto mb-4" />
+                    <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">No service packages found.</p>
+                </div>
+            )}
+          </main>
         </div>
-      </section>
+      </div>
+
+      {/* Mobile Filter Sidebar */}
+      {isSidebarOpen && (
+          <div className="fixed inset-0 z-[60] flex animate-fade-in">
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
+              <div className="relative w-72 bg-white h-full p-8 shadow-2xl flex flex-col animate-slide-left">
+                  <div className="flex items-center justify-between mb-8 pb-3 border-b">
+                      <h2 className="text-lg font-black uppercase">Plan Details</h2>
+                      <button onClick={() => setIsSidebarOpen(false)}><X size={18}/></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                      <FilterSection />
+                  </div>
+                  <button 
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="w-full bg-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] mt-6 shadow-xl active:scale-95"
+                  >
+                    View Packages
+                  </button>
+              </div>
+          </div>
+      )}
 
       <Footer />
-      <Toast
-        isVisible={toast.isVisible}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ isVisible: false, message: '', type: 'success' })}
-      />
     </div>
   );
 };
 
-export default Services;
+export default ServicesPage;
