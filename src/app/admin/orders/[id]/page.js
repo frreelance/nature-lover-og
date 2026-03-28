@@ -15,7 +15,10 @@ import {
   CheckCircle2,
   Clock,
   MoreVertical,
-  Calendar
+  Calendar,
+  DollarSign,
+  Banknote,
+  ShieldCheck
 } from 'lucide-react';
 import api from '@/api/api';
 
@@ -45,18 +48,39 @@ const OrderDetailsPage = () => {
     }
   };
 
-  const handleUpdateStatus = async () => {
+  const handleUpdateStatus = async (statusOverride = null) => {
+    const finalStatus = statusOverride || updateStatus;
     try {
       await api.patch(`/api/admin/orders/${id}`, { 
-        status: updateStatus,
+        status: finalStatus,
         note: note 
       });
-      toast.success('Order status updated successfully');
+      toast.success(`Order status updated to ${finalStatus}`);
       fetchOrderDetails();
+      setNote('');
     } catch (error) {
       toast.error('Failed to update status');
     }
   };
+
+  const isCancelled = order?.status === 'cancelled';
+  const isDelivered = order?.status === 'delivered';
+  const isRefunded = order?.status === 'refunded';
+  const isFinalized = isDelivered || isRefunded;
+
+  const getAvailableStatuses = () => {
+    if (!order) return [];
+    const current = order.status;
+    const isCOD = order.paymentMethod?.toLowerCase() === 'cod';
+    
+    if (current === 'pending') return ['processed', 'cancelled'];
+    if (current === 'processed') return ['shipped', 'cancelled'];
+    if (current === 'shipped') return ['delivered', 'cancelled'];
+    if (current === 'cancelled' && !isCOD) return ['refunded'];
+    return [];
+  };
+
+  const availableOptions = getAvailableStatuses();
 
   if (loading) {
     return (
@@ -97,6 +121,8 @@ const OrderDetailsPage = () => {
             <span className={`px-4 py-1 rounded-full text-xs font-bold capitalize ${
               order.status === 'delivered' ? 'bg-green-100 text-green-700' : 
               order.status === 'pending' ? 'bg-orange-100 text-orange-700' : 
+              order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+              order.status === 'refunded' ? 'bg-gray-100 text-gray-700' :
               'bg-blue-100 text-blue-700'
             }`}>
               {order.status}
@@ -128,14 +154,13 @@ const OrderDetailsPage = () => {
 
           {/* Order Info Card */}
           <div className="p-6 border border-gray-100 rounded-2xl flex items-start gap-4 hover:shadow-md transition-shadow">
-            <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
-              <Truck size={24} />
+            <div className={`p-3 rounded-xl ${order.paymentMethod?.toLowerCase() === 'cod' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
+              {order.paymentMethod?.toLowerCase() === 'cod' ? <Banknote size={24} /> : <CreditCard size={24} />}
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-gray-900">Order Info</h3>
-              <p className="text-sm text-gray-600">Shipping: Next Express</p>
-              <p className="text-sm text-gray-600">Payment Method: Card</p>
-              <p className="text-sm text-gray-600">Status: {order.status}</p>
+              <h3 className="font-bold text-gray-900">Payment Setup</h3>
+              <p className="text-sm text-gray-600 font-medium">Method: <span className="uppercase">{order.paymentMethod || 'Razorpay'}</span></p>
+              <p className="text-sm text-gray-600 italic">Status: <span className="font-bold">{order.paymentStatus || 'Pending'}</span></p>
             </div>
           </div>
 
@@ -156,15 +181,26 @@ const OrderDetailsPage = () => {
         </div>
 
         {/* Payment Info Overlay/Small Card */}
-        <div className="p-6 border border-gray-100 rounded-2xl max-w-sm space-y-4">
-          <h3 className="font-bold text-gray-900">Payment Info</h3>
+        <div className="p-6 bg-gray-50/50 border border-gray-100 rounded-2xl max-w-sm space-y-4">
+          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+             <ShieldCheck size={18} className="text-emerald-500" />
+             Payment Verification
+          </h3>
           <div className="flex items-center gap-3">
-            <CreditCard size={20} className="text-red-500" />
-            <span className="text-sm text-gray-600">Master Card **** **** 6557</span>
+            {order.paymentMethod?.toLowerCase() === 'cod' ? (
+              <>
+                 <Banknote size={20} className="text-orange-500" />
+                 <span className="text-sm font-bold text-gray-900 uppercase tracking-widest">Cash on Delivery</span>
+              </>
+            ) : (
+              <>
+                 <CreditCard size={20} className="text-indigo-500" />
+                 <span className="text-sm font-bold text-gray-900 uppercase tracking-widest">Razorpay Online (Paid)</span>
+              </>
+            )}
           </div>
-          <div className="text-sm text-gray-600">
-            <p>Business name: {order.user?.fullName}</p>
-            <p>Phone: {order.deliveryAddress?.phone}</p>
+          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+            {order.paymentMethod === 'cod' ? 'Payment expected at delivery time' : 'Transaction ID: Verified'}
           </div>
         </div>
       </div>
@@ -229,59 +265,88 @@ const OrderDetailsPage = () => {
         </div>
 
         {/* Update Tracking Details Form */}
-        <div className="mt-12 p-8 bg-gray-50/50 rounded-3xl border border-gray-100">
-          <h3 className="font-bold text-gray-900 mb-6">Update Tracking Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
+        {!isFinalized ? (
+          <div className="mt-12 p-8 bg-gray-50/50 rounded-3xl border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-gray-900">Update Tracking Details</h3>
+              {availableOptions.length === 0 && !isFinalized && (
+                <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                  No further transitions available
+                </span>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tracking Status</label>
+                  <select 
+                    value={updateStatus}
+                    onChange={(e) => setUpdateStatus(e.target.value)}
+                    disabled={availableOptions.length === 0}
+                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-black outline-none disabled:opacity-50 disabled:bg-gray-100"
+                  >
+                    <option value={order.status}>Current: {order.status}</option>
+                    {availableOptions.map(opt => (
+                      <option key={opt} value={opt}>Move to: {opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date</label>
+                    <input type="date" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm" defaultValue={new Date().toISOString().split('T')[0]} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Time</label>
+                    <input type="time" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm" defaultValue="10:45" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Updated By</label>
+                  <input type="text" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-400" disabled value="Admin" />
+                </div>
+              </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tracking Status</label>
-                <select 
-                  value={updateStatus}
-                  onChange={(e) => setUpdateStatus(e.target.value)}
-                  className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-black outline-none"
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Description/Note</label>
+                <textarea 
+                  rows="6"
+                  placeholder="Enter some notes about the shipment..."
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-1 focus:ring-black outline-none resize-none"
+                ></textarea>
+              </div>
+            </div>
+            
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+              {order.status !== 'cancelled' && (
+                <button 
+                  onClick={() => handleUpdateStatus('cancelled')}
+                  className="px-8 py-3 rounded-xl border border-red-200 text-red-600 text-sm font-bold hover:bg-red-50 transition-all"
                 >
-                  <option value="pending">Received</option>
-                  <option value="processed">Processed</option>
-                  <option value="shipped">Out for Delivery</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Date</label>
-                  <input type="date" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm" defaultValue={new Date().toISOString().split('T')[0]} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Time</label>
-                  <input type="time" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm" defaultValue="10:45" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Updated By</label>
-                <input type="text" className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-400" disabled value="Admin" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Description/Note</label>
-              <textarea 
-                rows="6"
-                placeholder="Enter some notes about the shipment..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full p-4 bg-white border border-gray-200 rounded-2xl text-sm focus:ring-1 focus:ring-black outline-none resize-none"
-              ></textarea>
+                  Cancel Order
+                </button>
+              )}
+              
+              <button 
+                onClick={() => handleUpdateStatus()}
+                disabled={availableOptions.length === 0 || updateStatus === order.status}
+                className="bg-black text-white px-12 py-3 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+              >
+                {order.status === 'cancelled' && order.paymentMethod?.toLowerCase() !== 'cod' ? 'Process Refund' : 'Save Update'}
+              </button>
             </div>
           </div>
-          <div className="mt-8 flex justify-center">
-            <button 
-              onClick={handleUpdateStatus}
-              className="bg-black text-white px-12 py-3 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95"
-            >
-              Save Update
-            </button>
+        ) : (
+          <div className="mt-12 p-10 bg-green-50/50 rounded-3xl border border-green-100 text-center">
+             <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} />
+             </div>
+             <h3 className="text-lg font-bold text-gray-900">This order is finalized</h3>
+             <p className="text-gray-500 text-sm mt-1">Status: <span className="font-bold text-gray-900 uppercase tracking-widest">{order.status}</span></p>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Products Summary Card */}
@@ -322,12 +387,8 @@ const OrderDetailsPage = () => {
               <span className="font-bold">₹{order.totalAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Tax (7%)</span>
-              <span className="font-bold">₹{(order.totalAmount * 0.07).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
               <span className="text-gray-500">Discount</span>
-              <span className="font-bold">₹0</span>
+              <span className="font-bold text-green-600">- ₹0</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Shipping</span>
@@ -335,7 +396,7 @@ const OrderDetailsPage = () => {
             </div>
             <div className="flex justify-between text-lg pt-3 border-t border-gray-100">
               <span className="font-black text-gray-900">Total</span>
-              <span className="font-black text-gray-900">₹{(order.totalAmount * 1.07).toLocaleString()}</span>
+              <span className="font-black text-gray-900">₹{order.totalAmount.toLocaleString()}</span>
             </div>
           </div>
         </div>

@@ -109,6 +109,7 @@ const AdminOrders = () => {
               <th className="px-6 py-4">Order Details</th>
               <th className="px-6 py-4">Customer</th>
               <th className="px-6 py-4">Amount</th>
+              <th className="px-6 py-4">Payment</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-center">Action</th>
             </tr>
@@ -136,7 +137,16 @@ const AdminOrders = () => {
                     <p className="text-xs text-gray-500">{order.items.length} items</p>
                 </td>
                 <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${
+                      order.paymentMethod?.toLowerCase() === 'cod' 
+                      ? 'bg-orange-50 text-orange-600 border-orange-100' 
+                      : 'bg-green-50 text-green-600 border-green-100'
+                    }`}>
+                        {order.paymentMethod || 'PAID'}
+                    </span>
+                </td>
+                <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
                 </td>

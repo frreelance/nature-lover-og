@@ -11,6 +11,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import api from '@/api/api';
+import RecentActivity from '@/components/admin/RecentActivity';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -46,8 +47,29 @@ const AdminDashboard = () => {
     { title: 'Active Users', value: stats.totalUsers.toLocaleString(), icon: Users, color: 'bg-purple-100 text-purple-600' }
   ] : [];
 
+  const mockActivities = [
+    { type: 'payment', description: 'Renewed account with BB_10MBPS_2M plan', timestamp: '28-12-2024 12:34 PM' },
+    { type: 'issue_closed', description: 'Closed issue #12345', timestamp: '26-11-2024 08:47 PM' },
+    { type: 'issue_opened', description: 'Opened issue #123456', timestamp: '24-11-2024 11:13 PM' },
+    { type: 'plan_change', description: 'Changed plan to BB_10MBPS_2M', timestamp: '31-12-2024 09:22 AM' },
+    { type: 'user_added', description: 'Customer was added by @johndoe', timestamp: '06-09-2024 12:39 PM' },
+  ];
+
+  const recentActivities = [
+    ...(stats?.recentOrders?.map(order => ({
+      id: order._id,
+      type: order.status === 'delivered' ? 'issue_closed' : 'payment',
+      description: `Order #${order._id.slice(-5).toUpperCase()} ${order.status} for ${order.user?.fullName || 'Customer'}`,
+      timestamp: new Date(order.createdAt).toLocaleString('en-IN', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      }).replace(/\//g, '-')
+    })) || []),
+    ...mockActivities
+  ].slice(0, 6);
+
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in p-4 lg:p-0">
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,24 +86,22 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-        <div className="divide-y">
-          {stats?.recentOrders?.map((order) => (
-            <div key={order._id} className="py-4 flex justify-between items-center hover:bg-gray-50 px-2 rounded-xl transition-colors cursor-pointer" onClick={() => router.push('/admin/orders')}>
-              <div className="flex gap-4 items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center font-bold text-green-700">#{order._id.slice(-4)}</div>
-                <div>
-                  <p className="font-bold text-gray-800">{order.user?.fullName || 'N/A'}</p>
-                  <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()} • {order.totalItems} items</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Main Content Area (e.g., charts or detailed tables could go here) */}
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 h-[500px] flex items-center justify-center text-gray-400">
+             <div className="text-center group cursor-default">
+                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <TrendingUp size={32} className="text-indigo-400" />
                 </div>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-green-600">₹{order.totalAmount}</p>
-                <span className="text-xs font-bold uppercase tracking-wider">{order.status}</span>
-              </div>
-            </div>
-          ))}
+                <p className="font-bold text-gray-500">Sales Overview Chart Placeholder</p>
+                <p className="text-sm">Real-time data visualization coming soon</p>
+             </div>
+          </div>
+        </div>
+        
+        <div className="lg:col-span-1 h-full">
+          <RecentActivity activities={recentActivities} />
         </div>
       </div>
     </div>

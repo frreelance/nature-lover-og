@@ -10,7 +10,9 @@ import {
   Clock, 
   Headphones,
   ShieldCheck,
-  Loader2
+  Loader2,
+  CreditCard,
+  Banknote
 } from 'lucide-react';
 import api from '@/api/api';
 import toast from 'react-hot-toast';
@@ -43,6 +45,7 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod');
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -130,7 +133,8 @@ const CheckoutPage = () => {
           name: `${formData.firstName} ${formData.lastName}`.trim()
         },
         notes: formData.description,
-        shippingMethod: 'free'
+        shippingMethod: 'free',
+        paymentMethod: paymentMethod
       };
 
       await api.post('/api/orders', payload);
@@ -160,12 +164,25 @@ const CheckoutPage = () => {
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">Success! Order Confirmed</h1>
                 <p className="text-sm text-gray-500 mb-10">We've received your order and started preparing it for transit.</p>
                 
-                <div className="space-y-4 mb-10 text-left bg-gray-50 p-6 rounded-2xl">
-                    <div className="flex items-center gap-4">
-                        <Clock className="text-gray-400" size={18} />
+                <div className="space-y-4 mb-10 text-left bg-gray-50 p-8 rounded-3xl border border-gray-100">
+                    <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                            <Clock className="text-indigo-500" size={18} />
+                        </div>
                         <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase">Estimated Delivery</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estimated Arrival</p>
                             <p className="text-sm font-bold text-gray-800">3-7 Business Days</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 pt-2">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                            <Banknote className="text-emerald-500" size={18} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payment Info</p>
+                            <p className="text-sm font-bold text-gray-800">
+                                {paymentMethod === 'cod' ? 'Pay at Doorstep (COD)' : 'Paid via Razorpay'}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -245,7 +262,7 @@ const CheckoutPage = () => {
                     </div>
                     {/* Auto-filled but editable fields */}
                     <div className="grid grid-cols-2 gap-4">
-                        <InputField label="City" name="city" placeholder="City" value={formData.city} onChange={handleInputChange} />
+                        <InputField label="District" name="city" placeholder="District" value={formData.city} onChange={handleInputChange} />
                         <InputField label="State" name="state" placeholder="State" value={formData.state} onChange={handleInputChange} />
                     </div>
                 </div>
@@ -259,29 +276,86 @@ const CheckoutPage = () => {
                         onChange={handleInputChange}
                         placeholder="Any additional details or landmarks?"
                         className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:border-black outline-none text-sm font-medium text-gray-900 transition-all shadow-sm focus:shadow-md resize-none"
-                        required
                     />
                 </div>
               </form>
             </section>
 
             <section className="space-y-6 pt-10 border-t border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Shipping Selection</h2>
-                <div className="p-6 rounded-2xl border-2 border-black bg-gray-50 flex justify-between items-center group cursor-pointer transition-all shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                        <CreditCard size={20} className="text-indigo-600" />
+                    </div>
+                    Payment Selection
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Cash on Delivery */}
+                    <div 
+                        onClick={() => setPaymentMethod('cod')}
+                        className={`p-6 rounded-2xl border-2 transition-all cursor-pointer group relative overflow-hidden ${
+                            paymentMethod === 'cod' 
+                            ? 'border-black bg-white shadow-xl shadow-gray-200/50' 
+                            : 'border-gray-100 bg-gray-50 hover:border-gray-200'
+                        }`}
+                    >
+                        {paymentMethod === 'cod' && (
+                            <div className="absolute top-0 right-0 p-2">
+                                <div className="w-2.5 h-2.5 bg-black rounded-full" />
+                            </div>
+                        )}
+                        <div className="flex gap-4 items-center mb-4">
+                            <div className={`p-3 rounded-xl transition-colors ${paymentMethod === 'cod' ? 'bg-black text-white' : 'bg-white text-gray-400 border border-gray-100'}`}>
+                                <Banknote size={20} />
+                            </div>
+                            <div>
+                                <p className={`font-bold text-sm ${paymentMethod === 'cod' ? 'text-gray-900' : 'text-gray-500'}`}>Cash on Delivery</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pay at your doorstep</p>
+                            </div>
+                        </div>
+                        <div className={`text-xs font-medium leading-relaxed ${paymentMethod === 'cod' ? 'text-gray-600' : 'text-gray-400'}`}>
+                            Standard processing. No extra charges for COD orders.
+                        </div>
+                    </div>
+
+                    {/* Razorpay (Disabled) */}
+                    <div className="p-6 rounded-2xl border-2 border-dashed border-gray-100 bg-gray-50/30 opacity-60 cursor-not-allowed relative group grayscale">
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <span className="bg-black text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg">Soon Available</span>
+                        </div>
+                        <div className="flex gap-4 items-center mb-4 blur-[1px]">
+                            <div className="p-3 rounded-xl bg-white text-gray-400 border border-gray-100">
+                                <CreditCard size={20} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-sm text-gray-500">Online Payment</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">UPI, Cards, Netbanking</p>
+                            </div>
+                        </div>
+                        <div className="text-xs font-medium text-gray-400 blur-[1px]">
+                            Powered by Razorpay Secure. Encrypted transactions.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="space-y-6 pt-10 border-t border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Shipping Method</h2>
+                <div className="p-6 rounded-2xl border-2 border-black bg-white flex justify-between items-center group cursor-default transition-all shadow-sm">
                     <div className="flex gap-4">
-                        <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center bg-white">
+                        <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center bg-white shrink-0">
                             <div className="w-2.5 h-2.5 bg-black rounded-full" />
                         </div>
                         <div>
-                            <p className="font-bold text-sm">Standard Shipping</p>
-                            <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-widest font-bold">Estimated delivery: 3-7 Business Days</p>
+                            <p className="font-bold text-sm">Priority Courier</p>
+                            <p className="text-xs text-gray-400 mt-0.5 uppercase tracking-widest font-bold">Delivery within 3-7 Business Days</p>
                         </div>
                     </div>
-                    <span className="font-bold text-sm">₹0.00</span>
+                    <span className="font-bold text-sm text-green-600 uppercase tracking-widest">FREE</span>
                 </div>
                 <div className="flex items-center gap-3 px-2 text-gray-400">
                      <ShieldCheck size={18} />
-                     <p className="text-[10px] font-bold uppercase tracking-widest">Safe & Healthy Transit Guaranteed</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest">Safe & Secured Transit Verified</p>
                 </div>
             </section>
           </div>

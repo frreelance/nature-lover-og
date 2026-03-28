@@ -47,7 +47,7 @@ export async function POST(req) {
     const user = await getAuthUser(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const { deliveryAddress, contactInfo, notes } = await req.json();
+    const { deliveryAddress, contactInfo, notes, paymentMethod } = await req.json();
 
     await connectDB();
     const cart = await Cart.findOne({ user: user._id });
@@ -69,6 +69,8 @@ export async function POST(req) {
       totalAmount: cart.totalAmount,
       totalItems: cart.totalItems,
       status: 'pending',
+      paymentMethod: paymentMethod || 'cod',
+      paymentStatus: 'pending',
       deliveryAddress,
       contactInfo,
       notes,
@@ -104,6 +106,7 @@ export async function POST(req) {
           <table width="100%">
             <tr>
               <td><span style="color: #999; font-size: 11px; text-transform: uppercase;">Order Number</span><br/><b>#${order._id.toString().slice(-8).toUpperCase()}</b></td>
+              <td align="center"><span style="color: #999; font-size: 11px; text-transform: uppercase;">Payment</span><br/><b>${order.paymentMethod?.toUpperCase() || 'COD'}</b></td>
               <td align="right"><span style="color: #999; font-size: 11px; text-transform: uppercase;">Date</span><br/><b>${new Date().toLocaleDateString()}</b></td>
             </tr>
           </table>

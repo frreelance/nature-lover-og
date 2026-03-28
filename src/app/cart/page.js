@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/utils/ScrollToTop';
 import Toast from '@/components/Toast';
-import { ShoppingCart, Plus, Minus, Trash2, Heart, ChevronRight, Package, Leaf, Wrench } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Heart, ChevronRight, Package, Leaf, Wrench, ShieldCheck, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -206,13 +206,28 @@ const Cart = () => {
                     Go to Checkout
                   </button>
                   
-                  <div className="mt-8 flex flex-col items-center gap-4">
+                  <div className="mt-8 flex flex-col items-center gap-6">
+                      <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl w-full border border-gray-100 group">
+                          <div className="flex -space-x-3">
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm z-20 group-hover:z-30 transition-all">
+                                 <CreditCard size={16} className="text-indigo-400" />
+                              </div>
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm z-10">
+                                 <Package size={16} className="text-amber-400" />
+                              </div>
+                          </div>
+                          <div>
+                              <p className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-900 leading-tight">Payment Methods</p>
+                              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">COD & Online Payments Enabled</p>
+                          </div>
+                      </div>
+
                       <button className="text-xs font-bold text-gray-300 hover:text-black transition-colors uppercase tracking-widest">
                           Apply Promo code
                       </button>
-                      <div className="flex items-center gap-3 text-gray-300 mt-4">
-                         <Package size={16} />
-                         <p className="text-[10px] uppercase font-bold tracking-widest">Premium Packing included</p>
+                      <div className="flex items-center gap-3 text-gray-300 mt-2">
+                         <ShieldCheck size={16} className="text-gray-200" />
+                         <p className="text-[10px] uppercase font-bold tracking-widest">30-Day Money Back Guarantee</p>
                       </div>
                   </div>
                 </div>

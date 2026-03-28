@@ -37,6 +37,16 @@ const orderSchema = new mongoose.Schema({
     email: String
   },
   notes: String,
+  paymentMethod: {
+    type: String,
+    enum: ['cod', 'razorpay'],
+    default: 'cod'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'paid', 'failed'],
+    default: 'pending'
+  },
   whatsappSent: { type: Boolean, default: false },
   whatsappMessageId: String,
   emailSent: { type: Boolean, default: false },
@@ -48,6 +58,11 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
+
+// Force schema update in Next.js development environment by checking if fields exist
+if (mongoose.models.Order && !mongoose.models.Order.schema.paths['paymentMethod']) {
+  delete mongoose.models.Order;
+}
 
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 export default Order;

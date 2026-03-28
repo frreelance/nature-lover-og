@@ -9,7 +9,7 @@ export async function POST(req) {
     const user = await getAuthUser(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const { deliveryAddress, contactInfo, notes } = await req.json();
+    const { deliveryAddress, contactInfo, notes, paymentMethod } = await req.json();
 
     await connectDB();
     const cart = await Cart.findOne({ user: user._id });
@@ -26,6 +26,8 @@ export async function POST(req) {
       totalAmount: cart.totalAmount,
       totalItems: cart.totalItems,
       status: 'pending',
+      paymentMethod: paymentMethod || 'cod',
+      paymentStatus: 'pending',
       deliveryAddress,
       contactInfo,
       notes,
