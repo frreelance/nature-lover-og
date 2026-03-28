@@ -30,85 +30,88 @@ const Services = () => {
     {
       icon: Scissors,
       title: "Grass Cutting",
-      description: "Professional lawn mowing and maintenance",
+      label: "Lawn Care",
+      description: "Precision mowing and aeration to keep your lawns lush, vibrant, and perfectly level throughout the year.",
       image: "/LandingPage/grass_cutting.jpg",
-      color: "from-orange-400 to-orange-500"
     },
     {
       icon: TreePine,
-      title: "Tree Work",
-      description: "Tree pruning, removal, and health care",
+      title: "Tree Management",
+      label: "Health & Trim",
+      description: "Expert pruning and structural support for your mature trees, ensuring safety and long-term vitality.",
       image: "/LandingPage/tree_work.jpg",
-      color: "from-green-400 to-green-500"
     },
     {
       icon: Palette,
       title: "Landscaping",
-      description: "Complete garden design and transformation",
+      label: "Design",
+      description: "Transformative garden planning that blends seasonal colors with modern structural hardscaping.",
       image: "/LandingPage/land_scaping.jpg",
-      color: "from-blue-400 to-blue-500"
     }
   ];
 
   return (
-    <section id="services" className="py-20 bg-white">
+    <section id="services" className="py-6 bg-white font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div ref={sectionRef} className="opacity-0 transform translate-y-8 text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-green-800 mb-4">
-            Our {' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-800">
-              Services
-            </span>
+        <div ref={sectionRef} className="opacity-0 transform translate-y-8 text-center mb-20">
+          <p className="text-[10px] font-black text-green-600 uppercase tracking-[0.4em] mb-4">Professional Care</p>
+          <h2 className="text-3xl md:text-5xl font-bold text-green-800 tracking-tight">
+            Our <span className="text-green-600">Expertise</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Professional gardening services tailored to your needs
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto mt-4 font-medium italic">
+            Nurturing your green spaces with artistic precision and organic wisdom
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {services.map((service, index) => (
-            <div
-              key={index}
-              className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden"
-            >
-              <div className="relative h-64 overflow-hidden">
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            <div key={index} className="group flex flex-col items-center">
+              {/* Image with Hover Button */}
+              <div className="relative w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden group-hover:shadow-2xl transition-all duration-700">
+                <img 
+                  src={service.image} 
+                  alt={service.title} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 shadow-lg" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <div className={`absolute top-4 right-4 w-12 h-12 bg-gradient-to-r ${service.color} rounded-full flex items-center justify-center shadow-lg`}>
-                  <service.icon className="h-6 w-6 text-white" />
+                
+                {/* Floating Icon Badge */}
+                <div className="absolute top-6 left-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 text-white">
+                  <service.icon size={20} />
                 </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-green-800 mb-3 group-hover:text-green-600 transition-colors duration-300">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {service.description}
-                </p>
+
+                {/* Hover Reveal Button */}
                 <button 
                   onClick={() => router.push('/services')}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 px-6 rounded-full font-semibold transition-all flex items-center justify-center space-x-2"
+                  className="absolute bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-2xl scale-0 group-hover:scale-100 transition-all duration-500 hover:bg-green-600"
                 >
-                  <span>Learn More</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight size={22} className="-rotate-45" />
                 </button>
+              </div>
+
+              {/* Text Information Below */}
+              <div className="w-full text-center px-4 mt-8 space-y-3">
+                <div>
+                  <p className="text-[10px] font-black text-green-600 uppercase tracking-widest leading-none mb-2">{service.label}</p>
+                  <h3 className="text-xl font-bold text-green-800 tracking-tight leading-tight">{service.title}</h3>
+                </div>
+                <div className="max-w-[300px] mx-auto">
+                    <p className="text-sm font-medium text-gray-400 leading-relaxed italic">
+                        "{service.description}"
+                    </p>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <button 
-            onClick={() => router.push('/services')}
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 mx-auto transition-all transform hover:scale-105"
-          >
-            View All Services <ArrowRight size={20}/>
-          </button>
-        </div>
+        <div className="text-center mt-16">
+                  <button 
+                    onClick={() => router.push('/services')}
+                    className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-full font-bold flex items-center gap-3 mx-auto transition-all transform hover:scale-105 shadow-xl shadow-green-100"
+                  >
+                    Browse Services <ArrowRight size={20}/>
+                  </button>
+                </div>
       </div>
     </section>
   );
