@@ -38,32 +38,27 @@ const AdminDashboard = () => {
   if (loading) return <div className="flex h-96 items-center justify-center animate-pulse">Loading dashboard...</div>;
 
   const statCards = stats ? [
-    { title: 'Total Orders', value: stats.totalOrders, icon: ShoppingCart, color: 'bg-blue-500' },
-    { title: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'bg-yellow-500' },
-    { title: 'Completed Orders', value: stats.completedOrders, icon: CheckCircle, color: 'bg-green-500' },
-    { title: 'Total Revenue', value: `₹${stats.totalRevenue}`, icon: DollarSign, color: 'bg-purple-500' },
-    { title: "Today Orders", value: stats.todayOrders, icon: TrendingUp, color: 'bg-orange-500' },
-    { title: 'Total Users', value: stats.totalUsers, icon: Users, color: 'bg-indigo-500' }
+    { title: 'Total Orders', value: stats.totalOrders.toLocaleString(), icon: ShoppingCart, color: 'bg-purple-100 text-purple-600' },
+    { title: 'Pending Orders', value: stats.pendingOrders.toLocaleString(), icon: Clock, color: 'bg-orange-100 text-orange-600' },
+    { title: 'Completed', value: stats.completedOrders.toLocaleString(), icon: CheckCircle, color: 'bg-green-100 text-green-600' },
+    { title: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-indigo-100 text-indigo-600' },
+    { title: "Today's Volume", value: stats.todayOrders.toLocaleString(), icon: TrendingUp, color: 'bg-blue-100 text-blue-600' },
+    { title: 'Active Users', value: stats.totalUsers.toLocaleString(), icon: Users, color: 'bg-purple-100 text-purple-600' }
   ] : [];
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-          <p className="text-gray-500">Real-time stats and management</p>
-        </div>
-      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 flex items-center justify-between group">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-              <h3 className="text-2xl font-bold">{stat.value}</h3>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.title}</p>
+              <h3 className="text-2xl font-black text-gray-900">{stat.value}</h3>
             </div>
-            <div className={`${stat.color} p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform`}>
-              <stat.icon className="h-6 w-6 text-white" />
+            <div className={`${stat.color.split(' ')[0]} p-4 rounded-2xl shadow-sm group-hover:scale-110 transition-transform`}>
+              <stat.icon size={24} className={stat.color.split(' ')[1]} />
             </div>
           </div>
         ))}

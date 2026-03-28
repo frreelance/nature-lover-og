@@ -42,62 +42,60 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Active Members</h1>
-          <p className="text-gray-500 text-sm">Monitor user activity and account status</p>
-        </div>
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+      <div className="flex justify-start mb-6">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input 
             type="text" 
-            placeholder="Search members..." 
+            placeholder="Search member name or email..." 
             value={searchTerm} 
             onChange={e=>setSearchTerm(e.target.value)} 
-            className="w-full pl-10 pr-4 py-2 border border-gray-100 rounded-xl text-sm focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50/50" 
+            className="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-2xl text-sm focus:ring-2 focus:ring-purple-100 outline-none transition-all shadow-sm bg-white" 
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50/50 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100">
-              <th className="px-6 py-4">User Identity</th>
-              <th className="px-6 py-4">Contact Gateway</th>
-              <th className="px-6 py-4">Privileges</th>
-              <th className="px-6 py-4">Onboarded</th>
-              <th className="px-6 py-4 text-center">Insights</th>
+            <tr className="bg-gray-50/80 text-xs font-semibold text-gray-500 border-b border-gray-100">
+              <th className="px-6 py-4">User</th>
+              <th className="px-6 py-4">Contact</th>
+              <th className="px-6 py-4">Role</th>
+              <th className="px-6 py-4">Joined On</th>
+              <th className="px-6 py-4 text-center">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-100">
             {users.map(u => (
               <tr key={u._id} className="hover:bg-gray-50/50 transition-colors group">
-                <td className="px-6 py-3">
+                <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-[13px]">{u.fullName.charAt(0)}</div>
+                    <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                      {u.fullName.charAt(0).toUpperCase()}
+                    </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 leading-tight">{u.fullName}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter italic">#{u._id.slice(-6)}</p>
+                      <p className="text-sm font-semibold text-gray-900 leading-tight">{u.fullName}</p>
+                      <p className="text-xs text-gray-500">#{u._id.slice(-6).toUpperCase()}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-3">
-                  <div className="text-sm font-medium text-gray-700">{u.email}</div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{u.phone || 'NO PHONE'}</div>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-700 font-medium">{u.email}</div>
+                  <div className="text-xs text-gray-500">{u.phone || 'No phone'}</div>
                 </td>
-                <td className="px-6 py-3">
-                  <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${u.role === 'admin' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
-                    {u.role || 'user'}
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${u.role === 'admin' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+                    {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'User'}
                   </span>
                 </td>
-                <td className="px-6 py-3">
-                    <p className="text-sm font-bold text-gray-900">{new Date(u.createdAt).toLocaleDateString()}</p>
+                <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                    {new Date(u.createdAt).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-3 text-center">
+                <td className="px-6 py-4 text-center">
                     <button 
                         onClick={()=>viewUserDetails(u._id)} 
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold text-purple-600 hover:text-white border border-purple-200 hover:bg-purple-600 rounded-lg transition-all"
                     >
                         View Profile
                     </button>
@@ -109,34 +107,64 @@ const AdminUsers = () => {
       </div>
 
       {showModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-xl w-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">User Info</h2>
-              <button onClick={()=>setShowModal(false)}><X/></button>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-xl w-full shadow-2xl border border-gray-100">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-xl font-bold text-gray-900">User Profile</h2>
+              <button 
+                onClick={()=>setShowModal(false)}
+                className="p-2 hover:bg-gray-50 rounded-full transition-colors"
+              >
+                <X size={20} className="text-gray-400 hover:text-gray-900" />
+              </button>
             </div>
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-                <div className="w-16 h-16 bg-green-200 rounded-full flex items-center justify-center text-3xl">👤</div>
+            
+            <div className="space-y-8">
+              <div className="flex items-center gap-6 p-6 bg-purple-50 rounded-3xl border border-purple-100">
+                <div className="w-20 h-20 bg-white text-purple-600 rounded-3xl flex items-center justify-center text-3xl font-bold shadow-sm border border-purple-100">
+                  {selectedUser.user.fullName.charAt(0).toUpperCase()}
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold">{selectedUser.user.fullName}</h3>
-                  <p className="text-gray-500">{selectedUser.user.email}</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{selectedUser.user.fullName}</h3>
+                  <p className="text-sm font-medium text-purple-600/80">{selectedUser.user.email}</p>
+                  <p className="text-xs text-gray-500 mt-1">{selectedUser.user.phone || 'No phone provided'}</p>
                 </div>
               </div>
+
               <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-blue-50 rounded-xl text-center">
-                  <p className="text-2xl font-bold text-blue-600">{selectedUser.stats.totalOrders}</p>
-                  <p className="text-xs font-bold">Orders</p>
+                <div className="p-5 bg-white border border-gray-100 rounded-2xl text-center shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">{selectedUser.stats.totalOrders}</p>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Orders</p>
                 </div>
-                <div className="p-4 bg-green-50 rounded-xl text-center">
-                  <p className="text-2xl font-bold text-green-600">{selectedUser.stats.completedOrders}</p>
-                  <p className="text-xs font-bold">Completed</p>
+                <div className="p-5 bg-white border border-gray-100 rounded-2xl text-center shadow-sm">
+                  <p className="text-2xl font-black text-green-600">{selectedUser.stats.completedOrders}</p>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Success</p>
                 </div>
-                <div className="p-4 bg-purple-50 rounded-xl text-center">
-                  <p className="text-xl font-bold text-purple-600">₹{selectedUser.stats.totalSpent}</p>
-                  <p className="text-xs font-bold">Spent</p>
+                <div className="p-5 bg-white border border-gray-100 rounded-2xl text-center shadow-sm">
+                  <p className="text-xl font-black text-purple-600">₹{selectedUser.stats.totalSpent.toLocaleString()}</p>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400 mt-1">Spent</p>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
+                   <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.user.role || 'User'}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-2xl">
+                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Joined Date</p>
+                   <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.user.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 flex gap-4">
+               <button 
+                onClick={()=>setShowModal(false)}
+                className="w-full py-3 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95"
+               >
+                 Close Details
+               </button>
             </div>
           </div>
         </div>

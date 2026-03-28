@@ -10,7 +10,7 @@ const ProtectedAdminRoute = ({ children }) => {
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated) {
-        router.push('/admin/login');
+        router.push('/');
       } else if (user?.role !== 'admin') {
         router.push('/');
       }

@@ -24,8 +24,10 @@ export const AuthProvider = ({ children }) => {
     if (savedToken) {
       setToken(savedToken);
       api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      // Do NOT set loading=false here if there's a token, let checkAuth handle it
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export const AuthProvider = ({ children }) => {
           }
         } finally {
           setAuthCheckInProgress(false);
+          setLoading(false);
         }
       }
     };
