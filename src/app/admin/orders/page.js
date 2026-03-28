@@ -102,8 +102,8 @@ const AdminOrders = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto no-scrollbar">
+        <table className="w-full text-left border-collapse min-w-[1000px] md:min-w-full">
           <thead>
             <tr className="bg-gray-50/80 text-xs font-semibold text-gray-500 border-b border-gray-100">
               <th className="px-6 py-4">Order Details</th>

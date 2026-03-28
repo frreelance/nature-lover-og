@@ -134,23 +134,25 @@ const OrderDetailsPage = () => {
                             <h1 className="text-3xl font-bold text-[#1A1A1A] leading-tight">Order #{order._id.slice(-10).toUpperCase()}</h1>
                         </div>
                         
-                        <div className="flex gap-3">
-                             {order.status === 'pending' && (
-                                 <button 
-                                     onClick={() => setShowCancelModal(true)}
-                                     disabled={isCancelling}
-                                     className="px-8 py-3.5 bg-red-50 text-red-600 border border-red-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                 >
-                                     {isCancelling ? <Loader2 size={14} className="animate-spin" /> : null}
-                                     Cancel Order
-                                 </button>
-                             )}
-                             <button className="p-3.5 bg-white border border-gray-100 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm active:scale-95">
-                                 <Printer size={18} />
-                             </button>
-                             <button className="flex items-center gap-3 px-8 py-3.5 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95">
-                                 Download Invoice <Download size={14} />
-                             </button>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full sm:w-auto">
+                              {order.status === 'pending' && (
+                                  <button 
+                                      onClick={() => setShowCancelModal(true)}
+                                      disabled={isCancelling}
+                                      className="flex-1 sm:flex-none px-4 sm:px-8 py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl sm:rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                  >
+                                      {isCancelling ? <Loader2 size={12} className="animate-spin" /> : null}
+                                      Cancel Order
+                                  </button>
+                              )}
+                              <div className="flex gap-2 flex-1 sm:flex-none">
+                                <button className="flex-1 sm:flex-none p-3 bg-white border border-gray-100 rounded-xl sm:rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center">
+                                    <Printer size={16} />
+                                </button>
+                                <button className="flex-[3] sm:flex-none flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-black text-white rounded-xl sm:rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95">
+                                    <span className="hidden xs:inline">Invoice</span> <Download size={14} />
+                                </button>
+                              </div>
                         </div>
                     </div>
                 </div>
@@ -161,18 +163,18 @@ const OrderDetailsPage = () => {
                     <div className="lg:col-span-8 space-y-12">
                         
                         {/* Status Card */}
-                        <div className="bg-white border border-gray-100 rounded-[3rem] p-10 md:p-14 shadow-[0_30px_100px_rgba(0,0,0,0.04)] relative overflow-hidden">
-                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-14 relative z-10">
-                                 <div className="space-y-3">
-                                     <div className={`flex items-center gap-3 px-4 py-2 rounded-full w-fit ${theme.pill} ${theme.text}`}>
-                                         <div className={`w-2 h-2 rounded-full ${theme.dot} animate-pulse`} />
-                                         <span className="text-[10px] font-bold uppercase tracking-wide">{theme.label}</span>
+                        <div className="bg-white border border-gray-100 rounded-3xl md:rounded-[3rem] p-6 sm:p-10 md:p-14 shadow-sm border border-gray-100 relative overflow-hidden">
+                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10 md:mb-14 relative z-10">
+                                 <div className="space-y-2">
+                                     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full w-fit ${theme.pill} ${theme.text}`}>
+                                         <div className={`w-1.5 h-1.5 rounded-full ${theme.dot} animate-pulse`} />
+                                         <span className="text-[9px] font-bold uppercase tracking-wide">{theme.label}</span>
                                      </div>
-                                     <p className="text-[11px] font-black uppercase tracking-widest text-gray-300">Last updated: {new Date(order.updatedAt).toLocaleDateString()}</p>
+                                     <p className="text-[9px] font-black uppercase tracking-widest text-gray-300">Updated: {new Date(order.updatedAt).toLocaleDateString()}</p>
                                  </div>
-                                 <div className="text-right">
-                                     <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Expected Arrival</p>
-                                     <p className="text-lg font-bold text-gray-900">{estimatedArrival.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                                 <div className="sm:text-right">
+                                     <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-0.5">Expected Arrival</p>
+                                     <p className="text-base font-bold text-gray-900">{estimatedArrival.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
                                  </div>
                              </div>
 
@@ -182,15 +184,15 @@ const OrderDetailsPage = () => {
                                 <div className={`absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 rounded-full transition-all duration-1000 ${order.status === 'delivered' ? 'w-full' : (order.status === 'shipped' ? 'w-2/3' : 'w-1/3')}`} />
                                 
                                 <div className="relative flex justify-between">
-                                    <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
+                                    <div className="flex flex-col items-center gap-4 bg-white px-2 z-10">
                                         <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center shadow-lg"><Package size={16}/></div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest">Ordered</p>
                                     </div>
-                                    <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
+                                    <div className="flex flex-col items-center gap-4 bg-white px-2 z-10">
                                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${['shipped', 'delivered'].includes(order.status) ? 'bg-black text-white shadow-lg' : 'bg-gray-50 text-gray-200'}`}><Truck size={16}/></div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest">Shipped</p>
                                     </div>
-                                    <div className="flex flex-col items-center gap-4 bg-[#FDFDFD] px-2 z-10">
+                                    <div className="flex flex-col items-center gap-4 bg-white px-2 z-10">
                                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${order.status === 'delivered' ? 'bg-green-600 text-white shadow-lg ring-4 ring-green-50' : 'bg-gray-50 text-gray-200'}`}><CheckCircle2 size={16}/></div>
                                         <p className="text-[9px] font-bold uppercase tracking-widest">Delivered</p>
                                     </div>
@@ -199,23 +201,20 @@ const OrderDetailsPage = () => {
                         </div>
 
                         {/* Order Items */}
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-300 border-l-4 border-black pl-5">Packed Essentials ({order.items.length})</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 sm:space-y-6">
+                            <h4 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#D0D0D0] border-l-4 border-black pl-4">Packed Essentials ({order.items.length})</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                                 {order.items.map((item, idx) => (
-                                    <div key={idx} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 flex gap-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group">
-                                        <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-50 border border-gray-50 flex-shrink-0 shadow-sm">
+                                    <div key={idx} className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-gray-100 flex items-center gap-4 md:gap-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
+                                        <div className="w-16 h-16 md:w-24 md:h-24 rounded-xl md:rounded-2xl overflow-hidden bg-gray-50 border border-gray-50 flex-shrink-0 shadow-sm">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         </div>
-                                        <div className="flex-1 py-1 space-y-1.5 min-w-0">
-                                            <h5 className="text-[14px] font-bold text-gray-900 truncate">{item.name}</h5>
-                                            <div className="flex items-center gap-2.5">
-                                                     <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">{formatPrice(item.price)} <span className="text-[8px] opacity-70">x{item.quantity}</span></span>
-                                                     {(item.size || item.duration) && (
-                                                         <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-[0.1em]">{item.size || item.duration}</span>
-                                                     )}
+                                        <div className="flex-1 space-y-1 min-w-0">
+                                            <h5 className="text-[13px] md:text-[14px] font-bold text-gray-900 truncate uppercase tracking-tighter italic">{item.name}</h5>
+                                            <div className="flex items-center gap-2">
+                                                     <span className="text-[9px] font-bold text-[#A0A0A0] tracking-widest uppercase">{formatPrice(item.price)} <span className="opacity-70">x{item.quantity}</span></span>
                                             </div>
-                                            <p className="text-lg font-bold text-gray-900 pt-3">{formatPrice(item.price * item.quantity)}</p>
+                                            <p className="text-base md:text-lg font-black text-gray-900 pt-1">{formatPrice(item.price * item.quantity)}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -224,51 +223,51 @@ const OrderDetailsPage = () => {
                     </div>
 
                     {/* Right Column: Billing & Address */}
-                    <div className="lg:col-span-4 space-y-10">
+                    <div className="lg:col-span-4 space-y-8 md:space-y-10">
                         {/* Address Block */}
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-300 border-l-4 border-black pl-5">Delivery Point</h4>
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8 animate-fade-in">
-                                <div className="flex gap-5">
-                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 flex-shrink-0"><MapPin size={24} /></div>
-                                    <div className="space-y-1.5 pt-1">
-                                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Street Mapping</p>
-                                        <p className="text-sm font-bold text-gray-900 leading-snug">{order.deliveryAddress?.street}</p>
-                                        <p className="text-xs font-semibold text-gray-400 pt-1 uppercase">{order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.pincode}</p>
+                        <div className="space-y-4 md:space-y-6">
+                            <h4 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#D0D0D0] border-l-4 border-black pl-4">Delivery Point</h4>
+                            <div className="bg-white p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
+                                <div className="flex gap-4 md:gap-5">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 flex-shrink-0"><MapPin size={20} /></div>
+                                    <div className="space-y-1 pt-1">
+                                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest leading-none mb-1">Street Mapping</p>
+                                        <p className="text-xs md:text-sm font-bold text-gray-900 leading-snug">{order.deliveryAddress?.street}</p>
+                                        <p className="text-[10px] font-semibold text-gray-400 uppercase">{order.deliveryAddress?.city}, {order.deliveryAddress?.state} {order.deliveryAddress?.pincode}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-5 pt-6 border-t border-gray-50">
-                                    <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 flex-shrink-0"><Phone size={24} /></div>
-                                    <div className="space-y-1.5 pt-1">
-                                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Connect Support</p>
-                                        <p className="text-sm font-bold text-gray-900">{order.contactInfo?.phone}</p>
-                                        <p className="text-xs font-bold text-gray-400 truncate tracking-tight">{order.contactInfo?.email}</p>
+                                <div className="flex gap-4 md:gap-5 pt-6 border-t border-gray-50">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 flex-shrink-0"><Phone size={20} /></div>
+                                    <div className="space-y-1 pt-1">
+                                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest leading-none mb-1">Connect Support</p>
+                                        <p className="text-xs md:text-sm font-bold text-gray-900">{order.contactInfo?.phone}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 truncate tracking-tight">{order.contactInfo?.email}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Bill Summary */}
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-300 border-l-4 border-black pl-5">Billing Digest</h4>
-                            <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-6 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-8 opacity-5 text-black group-hover:scale-125 transition-transform duration-1000"><ShoppingBag size={120} /></div>
+                        <div className="space-y-4 md:space-y-6">
+                            <h4 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[#D0D0D0] border-l-4 border-black pl-4">Billing Digest</h4>
+                            <div className="bg-white p-8 md:p-10 rounded-2xl md:rounded-[3rem] border border-gray-100 shadow-sm space-y-5 md:space-y-6 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-8 md:p-10 opacity-[0.03] text-black group-hover:scale-110 transition-transform duration-1000 select-none"><ShoppingBag size={100} /></div>
                                 
-                                <div className="space-y-4 relative z-10">
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                                        <span>Items Subtotal</span>
-                                        <span className="text-gray-900">{formatPrice(order.totalAmount - 40)}</span>
+                                <div className="space-y-3 md:space-y-4 relative z-10">
+                                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400">
+                                        <span>Subtotal</span>
+                                        <span className="text-gray-900">{formatPrice(order.totalAmount)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-                                        <span>Nature Logistics Fee</span>
-                                        <span className="text-gray-900">₹40.00</span>
+                                    <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-[0.15em] text-green-600">
+                                        <span>Logistics</span>
+                                        <span>FREE</span>
                                     </div>
-                                    <div className="h-px bg-gray-50 my-6" />
+                                    <div className="h-px bg-gray-50 my-4" />
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">Grand Total Paid</p>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-gray-300">Total Payable</p>
                                         <div className="flex justify-between items-end">
-                                            <span className="text-2xl font-bold text-gray-900 uppercase">{formatPrice(order.totalAmount)}</span>
-                                            <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest pb-1.5 flex items-center gap-1">
+                                            <span className="text-xl md:text-2xl font-black text-gray-900">{formatPrice(order.totalAmount)}</span>
+                                            <span className="text-[9px] font-black text-green-600 uppercase tracking-widest pb-1 flex items-center gap-1">
                                                 <CheckCircle2 size={12} /> Success
                                             </span>
                                         </div>

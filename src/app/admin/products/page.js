@@ -89,8 +89,8 @@ const AdminProducts = () => {
       {loading ? (
         <div className="flex h-64 items-center justify-center animate-pulse text-gray-400 font-medium">Loading inventory...</div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-x-auto shadow-sm no-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[800px] md:min-w-full">
             <thead>
               <tr className="bg-gray-50/50 text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100">
                 <th className="px-6 py-4">Item</th>

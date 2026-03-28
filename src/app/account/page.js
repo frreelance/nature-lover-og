@@ -278,7 +278,7 @@ const AccountPage = () => {
 
                         {activeSection === 'My Orders' && (
                             <div className="space-y-8 animate-fade-in">
-                                <div className="flex flex-wrap items-center gap-3 pb-8 border-b border-gray-100">
+                                <div className="flex flex-nowrap overflow-x-auto gap-2 pb-6 border-b border-gray-50 no-scrollbar select-none">
                                     {['All', 'Pending', 'Shipped', 'Delivered', 'Cancelled'].map(pill => (
                                         <button
                                             key={pill}
@@ -286,10 +286,10 @@ const AccountPage = () => {
                                                 setOrderFilter(pill);
                                                 setCurrentPage(1);
                                             }}
-                                            className={`px-7 py-3 rounded-full text-[11px] font-bold transition-all uppercase tracking-widest ${
+                                            className={`flex-shrink-0 px-6 py-2.5 rounded-full text-[10px] font-black transition-all uppercase tracking-[0.15em] ${
                                                 orderFilter === pill 
                                                 ? 'bg-black text-white shadow-lg' 
-                                                : 'bg-white border border-gray-100 text-[#A0A0A0] hover:border-gray-300'
+                                                : 'bg-white border border-gray-100 text-[#B0B0B0] hover:border-black hover:text-black'
                                             }`}
                                         >
                                             {pill}
@@ -314,20 +314,23 @@ const AccountPage = () => {
                                                 <div 
                                                     key={order._id} 
                                                     onClick={() => router.push(`/account/orders/${order._id}`)}
-                                                    className="bg-white border border-gray-100 rounded-3xl p-5 hover:shadow-md transition-all group cursor-pointer flex flex-col md:flex-row items-center gap-6"
+                                                    className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 hover:shadow-xl hover:translate-y-[-2px] transition-all group cursor-pointer flex items-center gap-4 md:gap-6"
                                                 >
-                                                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
-                                                        <img src={order.items[0]?.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
+                                                        <img src={order.items[0]?.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                     </div>
-                                                    <div className="flex-1 min-w-0 space-y-1 text-center md:text-left">
-                                                        <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-bold text-gray-400 mb-1">
+                                                    <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex items-center gap-2 text-[9px] font-bold mb-1">
                                                             <div className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
-                                                            <span className={theme.text}>{theme.label}</span>
-                                                            <span className="mx-1 opacity-20">|</span>
-                                                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                                                            <span className={`${theme.text} uppercase tracking-widest`}>{theme.label}</span>
+                                                            <span className="text-gray-200">|</span>
+                                                            <span className="text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span>
                                                         </div>
-                                                        <h4 className="font-bold text-gray-900 truncate uppercase tracking-tighter italic">{order.items.map(i => i.name).join(' | ')}</h4>
-                                                        <p className="font-bold text-black text-lg">{formatPrice(order.totalAmount)}</p>
+                                                        <h4 className="font-black text-gray-900 truncate uppercase tracking-tighter italic text-sm md:text-base">{order.items.map(i => i.name).join(' | ')}</h4>
+                                                        <div className="flex items-center justify-between">
+                                                            <p className="font-black text-black text-base md:text-lg">{formatPrice(order.totalAmount)}</p>
+                                                            <ChevronRight className="text-gray-300 md:hidden" size={16} />
+                                                        </div>
                                                     </div>
                                                     <ChevronRight className="text-gray-200 hidden md:block" />
                                                 </div>
