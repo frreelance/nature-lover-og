@@ -39,7 +39,7 @@ const Hero = () => {
       <div className="relative z-20 max-w-7xl mx-auto px-4 text-center">
         <div ref={heroRef} className="opacity-0 translate-y-8 transition-all duration-1000">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Bring Nature to Your <span className="text-green-400">Home</span>
+            Bring The Nature to Your <span className="text-green-400">Home</span>
           </h1>
           <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
             Premium plants and expert gardening services to help you create your own personal oasis.

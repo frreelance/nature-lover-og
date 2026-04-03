@@ -130,24 +130,24 @@ const AdminProducts = () => {
                     )}
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-1 transition-opacity">
                       <button 
                         onClick={() => { setSelectedProduct(product); setShowModal(true); }}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all bg-blue-50"
                         title="Quick View"
                       >
                         <Eye size={18} />
                       </button>
                       <button 
                         onClick={() => router.push(`/admin/products/edit/${product._id}`)}
-                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all bg-green-50"
                         title="Edit Item"
                       >
                         <Edit size={18} />
                       </button>
                       <button 
                         onClick={() => deleteProduct(product._id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all bg-red-50"
                         title="Delete"
                       >
                         <Trash2 size={18} />
