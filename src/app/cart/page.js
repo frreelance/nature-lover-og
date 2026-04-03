@@ -222,9 +222,9 @@ const Cart = () => {
                           </div>
                       </div>
 
-                      <button className="text-xs font-bold text-gray-300 hover:text-black transition-colors uppercase tracking-widest">
+                      {/* <button className="text-xs font-bold text-gray-300 hover:text-black transition-colors uppercase tracking-widest">
                           Apply Promo code
-                      </button>
+                      </button> */}
                       <div className="flex items-center gap-3 text-gray-300 mt-2">
                          <ShieldCheck size={16} className="text-gray-200" />
                          <p className="text-[10px] uppercase font-bold tracking-widest">30-Day Money Back Guarantee</p>
