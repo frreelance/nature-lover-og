@@ -89,8 +89,8 @@ const ServicesPage = () => {
 
   const categories = [
     { name: 'All Services', value: 'all' },
-    { name: '🌳 Park & Lawn Service', value: 'Park and Lawn' },
-    { name: '🏡 Home, Balcony & Pot', value: 'Home / Balcony' }
+    { name: '🌳 Lawn / Garden maintenance', value: 'Lawn / Garden maintenance' },
+    { name: '🏡 Balcony / Terrace plants maintenance', value: 'Balcony / Terrace plants maintenance' }
   ];
 
   const FilterSection = () => (

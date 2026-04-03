@@ -35,7 +35,7 @@ const AddProduct = () => {
     setProduct(prev => ({
         ...prev,
         type,
-        category: type === 'plant' ? 'Indoor' : 'Park and Lawn'
+        category: type === 'plant' ? 'Indoor' : 'Lawn / Garden maintenance'
     }));
   };
 
@@ -148,8 +148,8 @@ const AddProduct = () => {
                     </>
                 ) : (
                     <>
-                        <option value="Park and Lawn">Park and Lawn</option>
-                        <option value="Home / Balcony">Home / Balcony</option>
+                        <option value="Lawn / Garden maintenance">Lawn / Garden maintenance</option>
+                        <option value="Balcony / Terrace plants maintenance">Balcony / Terrace plants maintenance</option>
                     </>
                 )}
               </select>
