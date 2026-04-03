@@ -289,7 +289,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-gray-700">Delivery Notes*</label>
+                    <label className="text-sm font-medium text-gray-700">Delivery Notes</label>
                     <textarea 
                         name="description"
                         rows="4"
