@@ -46,6 +46,10 @@ const CheckoutPage = () => {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -112,6 +116,22 @@ const CheckoutPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    setCouponLoading(true);
+    try {
+      const res = await api.post('/api/coupons/apply', { code: couponCode });
+      if (res.data.success) {
+        setAppliedCoupon(res.data.data);
+        toast.success(res.data.message);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (getItemCount() === 0) return toast.error('Your cart is empty');
@@ -134,7 +154,8 @@ const CheckoutPage = () => {
         },
         notes: formData.description,
         shippingMethod: 'free',
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined
       };
 
       await api.post('/api/orders', payload);
@@ -388,6 +409,33 @@ const CheckoutPage = () => {
                   ))}
                 </div>
 
+                {/* Promo Code Section */}
+                <div className="mb-8 pt-6 border-t border-gray-100">
+                    <label className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-900 mb-2 block">Promo Code</label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            placeholder="Enter code here"
+                            disabled={!!appliedCoupon || couponLoading}
+                            className="flex-1 p-3 bg-white border border-gray-200 rounded-xl focus:border-black outline-none text-sm font-bold text-gray-900 uppercase disabled:opacity-60 disabled:bg-gray-50"
+                        />
+                        <button
+                            type="button"
+                            onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponCode(''); } : handleApplyCoupon}
+                            disabled={!couponCode || couponLoading}
+                            className={`px-6 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
+                                appliedCoupon 
+                                ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                                : 'bg-black text-white hover:bg-gray-800 disabled:opacity-50'
+                            }`}
+                        >
+                            {couponLoading ? <Loader2 className="animate-spin" size={16} /> : appliedCoupon ? 'Remove' : 'Apply'}
+                        </button>
+                    </div>
+                </div>
+
                 <div className="space-y-4 text-sm text-gray-400 font-bold pt-8 border-t border-gray-200 mb-10">
                   <div className="flex justify-between">
                     <span className="uppercase tracking-widest text-[10px]">Purchase Subtotal</span>
@@ -397,10 +445,16 @@ const CheckoutPage = () => {
                     <span className="uppercase tracking-widest text-[10px]">Shipping Charge</span>
                     <span className="text-green-600 font-bold">₹0.00</span>
                   </div>
+                  {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="uppercase tracking-widest text-[10px]">Discount ({appliedCoupon.code})</span>
+                    <span className="font-bold">-₹{appliedCoupon.discountAmount}.00</span>
+                  </div>
+                  )}
                   <div className="flex justify-between border-t border-gray-100 pt-6 text-gray-900 mt-4">
                     <span className="text-lg font-bold">Total Payable</span>
                     <div className="text-right">
-                        <p className="text-3xl font-black tracking-tighter">₹{getTotalPrice()}.00</p>
+                        <p className="text-3xl font-black tracking-tighter">₹{appliedCoupon ? getTotalPrice() - appliedCoupon.discountAmount : getTotalPrice()}.00</p>
                     </div>
                   </div>
                 </div>

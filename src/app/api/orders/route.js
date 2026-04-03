@@ -42,12 +42,12 @@ export async function GET(req) {
   }
 }
 
-export async function POST(req) {
+  export async function POST(req) {
   try {
     const user = await getAuthUser(req);
     if (!user) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
 
-    const { deliveryAddress, contactInfo, notes, paymentMethod } = await req.json();
+    const { deliveryAddress, contactInfo, notes, paymentMethod, couponCode } = await req.json();
 
     await connectDB();
     const cart = await Cart.findOne({ user: user._id });
@@ -63,11 +63,37 @@ export async function POST(req) {
     const estimatedDeliveryDate = new Date();
     estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 4);
 
+    let discountAmount = 0;
+    let finalTotalAmount = cart.totalAmount;
+    
+    // Add dynamic import to avoid circular dependency issues at the top
+    const Coupon = (await import('@/models/Coupon')).default;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
+      if (!coupon) return NextResponse.json({ success: false, message: "Invalid Coupon" }, { status: 400 });
+      if (coupon.usedBy.includes(user._id)) return NextResponse.json({ success: false, message: "Coupon already used" }, { status: 400 });
+
+      cart.items.forEach(item => {
+        if (coupon.targetType === 'all' || coupon.targetType === item.type) {
+           discountAmount += (item.price * item.quantity) * (coupon.discountPercentage / 100);
+        }
+      });
+
+      if (discountAmount > 0) {
+         finalTotalAmount = cart.totalAmount - discountAmount;
+         coupon.usedBy.push(user._id);
+         await coupon.save();
+      }
+    }
+
     const order = await Order.create({
       user: user._id,
       items: cart.items,
-      totalAmount: cart.totalAmount,
+      totalAmount: finalTotalAmount,
       totalItems: cart.totalItems,
+      couponCode: discountAmount > 0 ? couponCode : undefined,
+      discountAmount: discountAmount,
       status: 'pending',
       paymentMethod: paymentMethod || 'cod',
       paymentStatus: 'pending',
@@ -81,6 +107,7 @@ export async function POST(req) {
     cart.totalAmount = 0;
     cart.totalItems = 0;
     await cart.save();
+
 
     // Send Emails in background
     const itemsHtml = order.items.map(i => `
