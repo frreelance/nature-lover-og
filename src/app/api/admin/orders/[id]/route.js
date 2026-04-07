@@ -66,7 +66,7 @@ export async function PATCH(req, { params }) {
         </div>
 
         <div style="text-align: center; margin-top: 40px;">
-           <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nature-lovers-official.vercel.app'}/account" style="background: #000; color: #fff; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Track Shipment</a>
+           <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nature-lover-og.vercel.app'}/account" style="background: #000; color: #fff; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Track Shipment</a>
            <p style="margin-top: 25px; color: #999; font-size: 11px;">Questions? Call us at +91 9110750796</p>
         </div>
       </div>

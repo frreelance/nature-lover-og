@@ -159,7 +159,7 @@ export async function GET(req) {
         </div>
 
         <div style="text-align: center; border-top: 1px solid #eee; padding-top: 30px;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nature-lovers-official.vercel.app'}/account" style="background: #000; color: #fff; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Manage your Order</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nature-lover-og.vercel.app'}/account" style="background: #000; color: #fff; padding: 15px 35px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Manage your Order</a>
           <p style="margin-top: 25px; color: #999; font-size: 11px;">If you have any questions, reply to this email or contact us at <b>+91 9110750796</b></p>
         </div>
       </div>

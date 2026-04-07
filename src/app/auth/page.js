@@ -136,6 +136,17 @@ const AuthContent = () => {
                 <input type={showPassword ? 'text' : 'password'} placeholder="Password" required value={mode === 'login' ? loginData.password : registerData.password} onChange={e=>mode==='login'?setLoginData(p=>({...p, password:e.target.value})):setRegisterData(p=>({...p, password:e.target.value}))} className="w-full pl-10 pr-4 py-3 border rounded-xl" />
                 <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-green-700">{showPassword?'HIDE':'SHOW'}</button>
               </div>
+              {mode === 'login' && (
+                <div className="flex justify-end pr-1">
+                  <button 
+                    type="button" 
+                    onClick={() => router.push('/forgot-password')}
+                    className="text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
               {mode === 'register' && (
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
